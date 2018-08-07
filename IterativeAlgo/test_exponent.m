@@ -148,11 +148,13 @@ tp = otp(otp >= 1500);
 ypint = cumtrapz(tp, yp);
 
 CpIntAtTimes = interp1(oypint, times);
+shift1 = CpIntAtTimes(end) - ISAresult(end);
+shift2 = CpIntAtTimes(end) - Cpint1(end);
 
 figure;
-plot(times, CpIntAtTimes, ':', times, ISAresult, 'o-', ...
-    times, Cpint1, 'o-', times, fity(results(:, 1), times), 'o--');
-legend('real Cp result', 'ISA result', 'It Alg result 1', 'model 1');
+plot(otp, oypint, ':', times, ISAresult+shift1, 'o-', ...
+    times, Cpint1+shift2, 'o-', times, fity(results(:, 1), times)+shift2, 'o--');
+legend('real Cp result', 'ISA result', 'It Alg result 1', 'biexp_model');
 
 errors (1,1) = phi1(results(:, 1))/trapz(Cpint1.^2) ;
 
@@ -190,9 +192,10 @@ results2 = zeros(5,1); % change #variable
 % disp(['Error in model' num2str(2) ' = ' num2str(errors(1,2))]);
 
 %use model fitting ISA-italgo as fix point
+shift3 = oypint(end)-Cpint1(end);
 %combined graph
 figure;
-plot(otp, oypint, ':',times, Cpint1, 'bo', times, fity(results(:, 1), times), 'r-');
+plot(otp, oypint, ':',times, Cpint1+shift3, 'bo', times, fity(results(:, 1), times)+shift3, 'r-');
 legend(['real Cp int' ], ['gened Cp int'], ['fit gened Cp int']);
 
 
