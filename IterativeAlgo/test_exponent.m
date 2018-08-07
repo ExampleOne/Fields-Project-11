@@ -46,7 +46,7 @@ CpIntAtTimes = CpIntAtTimes - CpIntAtTimes(1) + iterResult(1);
 
 figure;
 plot(times, CpIntAtTimes, ':', times, ISAresult, 'o-', ...
-    times, iterResult, 'o-', times, fity(results, times), 'o--');
+    times, iterResult, 'o-', times, model2E(results, times), 'o--');
 legend('real Cp result', 'ISA result', 'It Alg result', 'biexponential model');
 
 error = phi1(results);%/trapz(Cpint1.^2) ;
@@ -56,10 +56,10 @@ error = phi1(results);%/trapz(Cpint1.^2) ;
 disp(['variables in model ' num2str(1) ':']);
 disp(results(:, 1)');
 disp(['Error in model' num2str(1) ' = ' num2str(error)]);
-   
+
 %combined graph
 figure;
-plot(times, CpIntAtTimes, ':',times, iterResult, 'bo', times, fity(results, times), 'r-');
+plot(times, CpIntAtTimes, ':',times, iterResult, 'bo', times, model2E(results, times), 'r-');
 legend('real Cp int', 'generated Cp int', 'biexponential fit');
 
 uisave;
