@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:pPr><w:pStyle w:val="title"/></w:pPr><w:r><w:t>Testing the simulated annealing function.</w:t></w:r></w:p><w:p><w:pPr><w:sectPr/></w:pPr></w:p><w:p><w:pPr><w:pStyle w:val="heading"/></w:pPr><w:r><w:t>Proportional model</w:t></w:r></w:p><w:p><w:pPr><w:sectPr/></w:pPr></w:p><w:p><w:pPr><w:pStyle w:val="code"/></w:pPr><w:r><w:t><![CDATA[format long;
+x = rand(100, 1);
+y = x * pi;
+f = @(m) norm(y - m * x)^2;
+m = simulatedAnnealing(f, 0, -5, 5, 100, 0.000001, 0.85);
+display(m - pi);
+assert(abs(m - pi) < 0.0001);
+% Fails to achieve high levels of accuracy?]]></w:t></w:r></w:p><w:p><w:pPr><w:sectPr/></w:pPr></w:p><w:p><w:pPr><w:pStyle w:val="heading"/></w:pPr><w:r><w:t>mx + c model</w:t></w:r></w:p><w:p><w:pPr><w:sectPr/></w:pPr></w:p><w:p><w:pPr><w:pStyle w:val="code"/></w:pPr><w:r><w:t><![CDATA[format long;
+x = rand(100, 1);
+y = x * pi + 10;
+f = @(v) norm(y - x * v(1) - v(2))^2;
+m = simulatedAnnealing(f, [-3000, -7000], [-10000 -10000], ...
+    [10000 10000], 100, 0.0000001, 0.85);
+display(m - [pi 10]);
+assert(norm(m - [pi 10]) < 0.00001);]]></w:t></w:r></w:p><w:p><w:pPr><w:sectPr/></w:pPr></w:p><w:p><w:pPr><w:pStyle w:val="heading"/></w:pPr><w:r><w:t>Parabola</w:t></w:r></w:p><w:p><w:pPr><w:pStyle w:val="code"/></w:pPr><w:r><w:t><![CDATA[format long;
+x = 2000 * rand(100, 1) - 1000;
+y = pi * (x + 5 * exp(3.33)).^2;% + rand(100, 1)/10;
+f = @(v) norm(y - v(1) * (x - v(2)).^2);
+result = simulatedAnnealing(f, [333 2000], [-10000 -11111], ...
+    [10000 10000], 10000, 0.000001, 0.85)
+display([pi -5 * exp(3.33)]);
+display((result - [pi -5 * exp(3.33)]));
+assert(norm(result - [pi -5 * exp(3.33)]) < 0.1);]]></w:t></w:r></w:p><w:p><w:pPr><w:sectPr/></w:pPr></w:p><w:p><w:pPr><w:pStyle w:val="heading"/></w:pPr><w:r><w:t>Rosenbrock function 2D</w:t></w:r></w:p><w:p><w:pPr><w:pStyle w:val="code"/></w:pPr><w:r><w:t><![CDATA[ format long;
+ f = @(x) 100 * (x(2) - x(1)^2)^2 + (1 - x(1))^2;
+ results = simulatedAnnealing(f, [-9000, 9999], ...
+     [-10000 -10000],[10000 10000], 500000, 0.00000001, 0.98)
+ assert(norm([1 1] - results) < 1);
+ %Works sometimes, fails often.... Increasing temperature helps]]></w:t></w:r></w:p><w:p><w:pPr><w:sectPr/></w:pPr></w:p><w:p><w:pPr><w:pStyle w:val="heading"/></w:pPr><w:r><w:t>Rosenbrock function 4D</w:t></w:r></w:p><w:p><w:pPr><w:pStyle w:val="code"/></w:pPr><w:r><w:t><![CDATA[format long;
+f = @(x) 100*(x(2) - x(1)^2)^2 + (1 - x(1))^2 + ...
+    100*(x(3) - x(2)^2)^2 + (1 - x(2))^2 + ...
+    100*(x(4) - x(3)^2)^2 + (1 - x(3))^2;
+results = simulatedAnnealing(f, [-100, 100, -100, 100], ...
+    [-200, -200, -200, -200], ...
+    [200, 200, 200, 200], 1e4, 1e-4, 0.9)
+assert(norm([1 1 1 1] - results) < 1);
+% Works sometimes...]]></w:t></w:r></w:p><w:p><w:pPr><w:sectPr/></w:pPr></w:p><w:p><w:pPr><w:pStyle w:val="heading"/></w:pPr><w:r><w:t>Easom function</w:t></w:r></w:p><w:p><w:pPr><w:pStyle w:val="code"/></w:pPr><w:r><w:t><![CDATA[format long;
+f = @(x) - 1e4 * cos(x(1)) * cos(x(2)) * ...
+    exp( -(x(1) - pi)^2 - (x(2) - pi)^2);
+results = simulatedAnnealing(f, [-1, 1], [-2, -2], ...
+    [2, 2], 10000, 1e-5, 0.9)
+assert(norm([pi pi] - results) < 0.5);
+% I think we fail here... But this is a much harder function]]></w:t></w:r></w:p><w:p><w:pPr><w:pStyle w:val="heading"/></w:pPr><w:r><w:t/></w:r></w:p><w:p><w:pPr><w:sectPr/></w:pPr></w:p><w:p><w:pPr><w:pStyle w:val="heading"/></w:pPr><w:r><w:t>Matrix</w:t></w:r></w:p><w:p><w:pPr><w:pStyle w:val="code"/></w:pPr><w:r><w:t><![CDATA[format long;
+f = @(x) norm( 1/sqrt(2) * [ 1 -1; 1 1] - x, 'fro');
+results = simulatedAnnealing(f, [2 2; 2 2], ...
+    [-2 -2; -2 -2], [ 3 3; 3 3], 100, 1e-5, 0.85)
+assert(f(results) < 0.1);
+    ]]></w:t></w:r></w:p><w:p><w:pPr><w:pStyle w:val="text"/></w:pPr><w:r><w:t/></w:r></w:p></w:body></w:document>
