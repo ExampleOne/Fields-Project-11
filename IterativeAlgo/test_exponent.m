@@ -17,7 +17,7 @@ endTime = fullTAC(bloodDrawFrame, 2);
 bloodDrawTime = (startTime  + endTime) / 2;
 singleBloodDraw = trapz(sourceCp(startTime:endTime, 2)) / ...
     (endTime - startTime);
-singleBloodDrawErrFactor = 1e6;
+bloodDrawErrFactor = 1e6;
 
 startTimes = trimmedTAC(:, 1);
 endTimes = trimmedTAC(:, 2);
@@ -35,22 +35,8 @@ iterResult = IterativeAlgorithm(relTAC, ISAresult, startTimes);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 times = (trimmedTAC(:,1) + trimmedTAC(:, 2)) / 2;
 
-fity = @(b,x) b(1)*exp(-b(2)*x) + b(3)*exp(-b(4)*x)+b(5);
-
-
-phi1 = @(b) trapz((iterResult - fity(b,times)).^2) + singleBloodDrawErrFactor * ...
-    ( (fity(b, bloodDrawTime + 0.05) - fity(b, bloodDrawTime - .05)) * 10 ...
-    - singleBloodDraw) ^ 2;
-% Takes single blood draw into account for error.
-
-tic;
-results = simulatedAnnealing(phi1,...
-    [0.1 0.002 0.1 0 0], ...
-    [-1e6 0 -1e6 0 0], ...
-    [0 0.01 0 0.001 2e6 ], 1e5, 1e-7, 0.90);
-disp(['Time elapsed in round ' num2str(1) ':']);
-toc;
-
+results = fit2E(iterResult, times, singleBloodDraw, bloodDrawTime, ...
+    bloodDrawErrFactor);
 
 %%% Display data...
 sourceCpInt = cumtrapz(sourceCp(:, 1), sourceCp(:, 2));
@@ -74,6 +60,6 @@ disp(['Error in model' num2str(1) ' = ' num2str(error)]);
 %combined graph
 figure;
 plot(times, CpIntAtTimes, ':',times, iterResult, 'bo', times, fity(results, times), 'r-');
-legend('real Cp int', 'generated Cp int', 'fit generated Cp int');
+legend('real Cp int', 'generated Cp int', 'biexponential fit');
 
 uisave;
