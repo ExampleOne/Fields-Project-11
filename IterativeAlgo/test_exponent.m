@@ -1,5 +1,5 @@
 %Tac simulated from Pablo model
-datafulltac = dlmread(['/home/jouyang/Downloads/Codes/trial_tac/0noise/fullTAC0sigma.tac'], '\t', 1, 0);
+datafulltac = dlmread('Data/TACs/pabloModel/0noise/fullTAC0sigma.tac', '\t', 1, 0);
 datafulltac = datafulltac(end - 17:end, :);
 % pdata = plasmafile
 datarelev = datafulltac(:,[3 4 7 8 9 10]); %the 6 brain regions
@@ -53,8 +53,8 @@ for l = 1:dim
 end
 
 [M,minl] = min(dist);
-ISAresult = Cpint1(:);
 Cpint1 = Cpintlist(:,minl);
+ISAresult = Cpint1(:);
 va1 = zeros(2,n);
 Cpint2 = zeros(18,n);
 %%%%%begin the iterative algorithm part%%%%%
@@ -116,7 +116,7 @@ results(:,1) = simulatedAnnealing(phi1,...
 disp(['Time elapsed in round ' num2str(1) ':']);
 toc;
 
-datap = dlmread(['/home/jouyang/Downloads/Codes/Cp_used_to_gen/pabloModel_0sigma.smpl'], '\t', 1, 0);
+datap = dlmread('Data/Cps/pabloModel/pabloModel_0sigma.smpl', '\t', 1, 0);
 otp = datap(:,1);
 oyp = datap(:,2);
 oypint = cumtrapz(otp,oyp);
@@ -172,4 +172,4 @@ shift = oypint(end) - ypint(end);
 %combined graph
 figure;
 plot(otp, oypint, ':',times, Cpint1+shift, 'bo', times, fity(results(:, 1), times)+shift, 'r-');
-legend(['real Cp int' ], ['gened Cp int'], ['fit gened Cp int']);
+legend('real Cp int', 'generated Cp int', 'fit generated Cp int');
