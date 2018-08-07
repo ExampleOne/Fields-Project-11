@@ -1,8 +1,9 @@
+clear variable;
 %Tac simulated from Pablo model
-datafulltac = dlmread('Data/TACs/pabloModel/0noise/fullTAC0sigma.tac', '\t', 1, 0);
-datafulltac = datafulltac(end - 17:end, :);
+fulltac = dlmread(['Data/TACs/pabloModel/0noise/fullTAC0sigma.tac'], '\t', 1, 0);
+trimmedTAC = fulltac(end - 17:end, :);
 % pdata = plasmafile
-datarelev = datafulltac(:,[3 4 7 8 9 10]); %the 6 brain regions
+datarelev = trimmedTAC(:,[3 4 7 8 9 10]); %the 6 brain regions
 
 n = size(datarelev,2);
 k = 1; %counter
@@ -12,11 +13,25 @@ dim = n*(n-1)/2;
 Cpintlist = zeros(18,dim); %same thing with Cpint but in 2-dim
 %va = zeros(4,dim);      %the [a1i,a2i,a1j,a2j] in Fields
 
-%ISA part
+startingFrame = 11;
+lastFrame = 28;
+sourceCp = dlmread('Data/Cps/pabloModel/pabloModel_0sigma.smpl', '\t', 1, 0);
+bloodDrawFrame = 20; % 15th frame
+startTime = fulltac(bloodDrawFrame, 1);
+endTime = fulltac(bloodDrawFrame, 2);
+bloodDrawTime = (startTime  + endTime) / 2;
+singleBloodDraw = trapz(sourceCp(startTime:endTime, 2)) / ...
+    (endTime - startTime);
+singleBloodDrawErrFactor = 10000;
 
+
+startTimes = trimmedTAC(:, 1);
+endTimes = trimmedTAC(:, 2);
+
+
+%ISA part
 for i = 1:n
     cti = datarelev(:,i);
-   
     intcti = cumtrapz(datafulltac(:,1),datarelev(:,i));
     
     %cpi = pdata(:,2);
@@ -52,14 +67,21 @@ for l = 1:dim
     end
 end
 
+
 [M,minl] = min(dist);
 Cpint1 = Cpintlist(:,minl);
+
+slope = (Cpint1(bloodDrawFrame - startingFrame + 1) - ...
+    Cpint1(bloodDrawFrame - startingFrame)) / (endTime - startTime);
+Cpint1 = Cpint1 * singleBloodDraw / slope;
+
+
 ISAresult = Cpint1(:);
 va1 = zeros(2,n);
 Cpint2 = zeros(18,n);
 %%%%%begin the iterative algorithm part%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-max_err = 1;
+max_err = 0.01;
 err = 200;
 
 while err > max_err
@@ -101,7 +123,7 @@ end
 format short g;
 times = datafulltac(:,1);
 
-fity = @(b,x) b(1)*exp(-b(2)*x) + b(3)*exp(-b(4)*x)+b(5);
+fity = @(b,x) b(1)*(1-exp(-b(2)*x)) + b(3)*(1-exp(-b(4)*x))+b(5);
 
 errors = zeros(1,2);
 results = zeros(5,2); %the 4 can be changed 
@@ -116,7 +138,7 @@ results(:,1) = simulatedAnnealing(phi1,...
 disp(['Time elapsed in round ' num2str(1) ':']);
 toc;
 
-datap = dlmread('Data/Cps/pabloModel/pabloModel_0sigma.smpl', '\t', 1, 0);
+datap = dlmread(['Data/Cps/pabloModel/pabloModel_0sigma.smpl'], '\t', 1, 0);
 otp = datap(:,1);
 oyp = datap(:,2);
 oypint = cumtrapz(otp,oyp);
@@ -168,8 +190,10 @@ results2 = zeros(5,1); % change #variable
 % disp(['Error in model' num2str(2) ' = ' num2str(errors(1,2))]);
 
 %use model fitting ISA-italgo as fix point
-shift = oypint(end) - ypint(end);
 %combined graph
 figure;
-plot(otp, oypint, ':',times, Cpint1+shift, 'bo', times, fity(results(:, 1), times)+shift, 'r-');
-legend('real Cp int', 'generated Cp int', 'fit generated Cp int');
+plot(otp, oypint, ':',times, Cpint1, 'bo', times, fity(results(:, 1), times), 'r-');
+legend(['real Cp int' ], ['gened Cp int'], ['fit gened Cp int']);
+
+
+uisave;
