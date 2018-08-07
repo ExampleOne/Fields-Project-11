@@ -17,7 +17,7 @@ endTime = fullTAC(bloodDrawFrame, 2);
 bloodDrawTime = (startTime  + endTime) / 2;
 singleBloodDraw = trapz(sourceCp(startTime:endTime, 2)) / ...
     (endTime - startTime);
-singleBloodDrawErrFactor = 10000;
+singleBloodDrawErrFactor = 1e6;
 
 startTimes = trimmedTAC(:, 1);
 endTimes = trimmedTAC(:, 2);
@@ -45,25 +45,21 @@ phi1 = @(b) trapz((iterResult - fity(b,times)).^2) + singleBloodDrawErrFactor * 
 
 tic;
 results = simulatedAnnealing(phi1,...
-    [0.1 0.00001 0.1 0.00001 0], ...
+    [0.1 0.002 0.1 0 0], ...
     [-1e6 0 -1e6 0 0], ...
-    [0 0.05 0 0.05 2e6 ], 1000, 1e-7, 0.85);
+    [0 0.01 0 0.001 2e6 ], 1e5, 1e-7, 0.90);
 disp(['Time elapsed in round ' num2str(1) ':']);
 toc;
 
-otp = sourceCp(:,1);
-oyp = sourceCp(:,2);
-oypint = cumtrapz(otp,oyp);
 
-yp = oyp(otp >= 1500);
-tp = otp(otp >= 1500);
-ypint = cumtrapz(tp, yp);
+%%% Display data...
+sourceCpInt = cumtrapz(sourceCp(:, 1), sourceCp(:, 2));
 
-CpIntAtTimes = interp1(oypint, times);
+CpIntAtTimes = interp1(sourceCpInt, times);
 CpIntAtTimes = CpIntAtTimes - CpIntAtTimes(1) + iterResult(1);
 
 figure;
-plot(times, CpIntAtTimes, ':', times, iterResult, 'o-', ...
+plot(times, CpIntAtTimes, ':', times, ISAresult, 'o-', ...
     times, iterResult, 'o-', times, fity(results, times), 'o--');
 legend('real Cp result', 'ISA result', 'It Alg result', 'biexponential model');
 
@@ -74,12 +70,7 @@ error = phi1(results);%/trapz(Cpint1.^2) ;
 disp(['variables in model ' num2str(1) ':']);
 disp(results(:, 1)');
 disp(['Error in model' num2str(1) ' = ' num2str(error)]);
-    
-results2 = zeros(5,1); % change #variable
-%real Cp data
-
-%use model fitting ISA-italgo as fix point
-shift = - CpIntAtTimes(1) + iterResult(1);
+   
 %combined graph
 figure;
 plot(times, CpIntAtTimes, ':',times, iterResult, 'bo', times, fity(results, times), 'r-');
