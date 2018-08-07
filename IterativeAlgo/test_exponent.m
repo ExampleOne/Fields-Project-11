@@ -35,21 +35,22 @@ iterResult = IterativeAlgorithm(relTAC, ISAresult, startTimes);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 times = (trimmedTAC(:,1) + trimmedTAC(:, 2)) / 2;
 
-results = fit2E(iterResult, times, singleBloodDraw, bloodDrawTime, ...
+[results, error] = fit2E(iterResult, times, singleBloodDraw, bloodDrawTime, ...
     bloodDrawErrFactor);
 
 %%% Display data...
 sourceCpInt = cumtrapz(sourceCp(:, 1), sourceCp(:, 2));
 
 CpIntAtTimes = interp1(sourceCpInt, times);
-CpIntAtTimes = CpIntAtTimes - CpIntAtTimes(1) + iterResult(1);
+CpIntAtTimes = CpIntAtTimes - CpIntAtTimes(end) + iterResult(end);
+%Fix end, not start!!
+ISAresult = ISAresult - ISAresult(end) + iterResult(end);
+%Fixing ISA too...
 
 figure;
 plot(times, CpIntAtTimes, ':', times, ISAresult, 'o-', ...
     times, iterResult, 'o-', times, model2E(results, times), 'o--');
 legend('real Cp result', 'ISA result', 'It Alg result', 'biexponential model');
-
-error = phi1(results);%/trapz(Cpint1.^2) ;
 
 % Includes integral of Y squared.
 
