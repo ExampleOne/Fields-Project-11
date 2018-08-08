@@ -1,6 +1,6 @@
 clear variable;
 %Tac simulated from Pablo model
-fulltac = dlmread(['Data/TACs/pabloModel/0noise/fullTAC0sigma.tac'], '\t', 1, 0);
+fulltac = dlmread(['Data/TACs/pabloModel/0noise0vb/fullTAC0sigma.tac'], '\t', 1, 0);
 trimmedTAC = fulltac(end - 17:end, :);
 % pdata = plasmafile
 datarelev = trimmedTAC(:,[3 4 7 8 9 10]); %the 6 brain regions
@@ -81,8 +81,9 @@ va1 = zeros(2,n);
 Cpint2 = zeros(18,n);
 %%%%%begin the iterative algorithm part%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-max_err = 0.0001;
-err = 200;
+ max_err = 1e-10;
+ err = 200;
+%iteration = 1;
 
 while err > max_err
 %regression to get new set of Vt and b
@@ -115,6 +116,7 @@ while err > max_err
         Cpint1 = Cpint2(:,minl);
         va1 = zeros(2,n);
         Cpint2 = zeros(18,n);
+        %iteration = iteration + 1;
 end
 
 % Extraplolate
