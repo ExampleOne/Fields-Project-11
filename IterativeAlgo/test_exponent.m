@@ -32,13 +32,13 @@ endTimes = trimmedTAC(:, 2);
 %ISA part
 for i = 1:n
     cti = datarelev(:,i);
-    intcti = cumtrapz(datafulltac(:,1),datarelev(:,i));
+    intcti = cumtrapz(trimmedTAC(:,1),datarelev(:,i));
     
     %cpi = pdata(:,2);
     %cpi = cumtrapz(pdata(:,1),pdata(:,2));
     for j = i + 1:n
          ctj = datarelev(:,j);
-         intctj = cumtrapz(datafulltac(:,1),datarelev(:,j));
+         intctj = cumtrapz(trimmedTAC(:,1),datarelev(:,j));
          % find the right singular vector va corresponding to smallest
          % right singular value of c4
          c4 = [cti,intcti,ctj,intctj];
@@ -81,18 +81,20 @@ va1 = zeros(2,n);
 Cpint2 = zeros(18,n);
 %%%%%begin the iterative algorithm part%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-max_err = 0.01;
+max_err = 0.0001;
 err = 200;
 
 while err > max_err
 %regression to get new set of Vt and b
+        
         for i = 1:n
             cti = datarelev(:,i);
-            intcti = cumtrapz(datafulltac(:,1),datarelev(:,i));
+            intcti = cumtrapz(trimmedTAC(:,1),datarelev(:,i));
             Cpint1lm = fitglm([cti,intcti],Cpint1,'linear');
             vatemp = Cpint1lm.Coefficients.Estimate;
             va1(:,i) = vatemp(2:end);
             Cpint2(:,i) = va1(1,i)*cti + va1(2,i)*intcti;
+           
         end   
 
         %take averages to estimate the cpint in new iteration----no
@@ -121,7 +123,7 @@ end
 %%use Simulated Annealing to fit the CPint1%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 format short g;
-times = datafulltac(:,1);
+times = trimmedTAC(:,1);
 
 fity = @(b,x) b(1)*(1-exp(-b(2)*x)) + b(3)*(1-exp(-b(4)*x))+b(5);
 
@@ -197,6 +199,16 @@ shift3 = oypint(end)-Cpint1(end);
 figure;
 plot(otp, oypint, ':',times, Cpint1+shift3, 'bo', times, fity(results(:, 1), times)+shift3, 'r-');
 legend(['real Cp int' ], ['gened Cp int'], ['fit gened Cp int']);
-
+%calculate the Vt by Cpint
+Vt = zeros(n,1);
+for i = 1:n
+            cti = datarelev(:,i);
+            intcti = cumtrapz(trimmedTAC(:,1),datarelev(:,i));
+            dependentvariable = intcti./cti;
+            regressor = (Cpint1+shift3)./cti;
+            lm = fitglm(regressor,dependentvariable,'linear');
+            coeffest = lm.Coefficients.Estimate;
+            Vt(i,1) = coeffest(end);
+end   
 
 uisave;
