@@ -41,7 +41,7 @@ for i = 1:n
          intctj = cumtrapz(trimmedTAC(:,1),datarelev(:,j));
          % find the right singular vector va corresponding to smallest
          % right singular value of c4
-         c4 = [cti,intcti,ctj,intctj];
+         c4 = [cti(2:end),intcti(2:end),ctj(2:end),intctj(2:end)];
          [U,S,V] = svd(c4);
          %va(:,k) = V(:,end);
          
@@ -83,7 +83,7 @@ Cpint2 = zeros(18,n);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  max_err = 1e-10;
  err = 200;
-%iteration = 1;
+iteration = 1;
 
 while err > max_err
 %regression to get new set of Vt and b
@@ -114,9 +114,9 @@ while err > max_err
         [M,minl] = min(dist);
         err = norm(Cpint1 - Cpint2(:,minl));
         Cpint1 = Cpint2(:,minl);
-        va1 = zeros(2,n);
-        Cpint2 = zeros(18,n);
-        %iteration = iteration + 1;
+        %va1 = zeros(2,n);
+        %Cpint2 = zeros(18,n);
+        iteration = iteration + 1;
 end
 
 % Extraplolate
@@ -207,8 +207,8 @@ Vt = zeros(n,1);
 for i = 1:n
             cti = datarelev(:,i);
             intcti = cumtrapz(trimmedTAC(:,1),datarelev(:,i));
-            dependentvariable = intcti./cti;
-            regressor = (Cpint1+shift3)./cti;
+            dependentvariable = intcti(2:end)./cti(2:end);
+            regressor = (Cpint1(2:end,:)+shift3)./cti(2:end);
             lm = fitglm(regressor,dependentvariable,'linear');
             coeffest = lm.Coefficients.Estimate;
             Vt(i,1) = coeffest(end);
