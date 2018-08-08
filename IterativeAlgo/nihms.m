@@ -5,9 +5,8 @@ format compact;
 startingFrame = 11;
 lastFrame = 28;
 %Tac simulated from Pablo model
-fullTAC = dlmread('Data/TACs/pabloModel/0noise/fullTAC0sigma.tac', '\t', 1, 0);
+fullTAC = dlmread('Data/TACs/pabloModel_0vb/0noise/fullTAC0sigma.tac', '\t', 1, 0);
 trimmedTAC = fullTAC(startingFrame:lastFrame, :);
-% pdata = plasmafile
 relTAC = trimmedTAC(:,[3 4 7 8 9 10]); %the 6 brain regions
 
 sourceCp = dlmread('Data/Cps/pabloModel/pabloModel_0sigma.smpl', '\t', 1, 0);
@@ -31,8 +30,7 @@ ISAresult = ISAresult * singleBloodDraw / slope;
 
 iterResult = IterativeAlgorithm(relTAC, ISAresult, startTimes);
 
-%%use Simulated Annealing to fit the CPint1%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Fit curve with biexponential model
 times = (trimmedTAC(:,1) + trimmedTAC(:, 2)) / 2;
 
 [results, error] = fit2E(iterResult, times, singleBloodDraw, bloodDrawTime, ...
@@ -47,16 +45,18 @@ CpIntAtTimes = CpIntAtTimes - CpIntAtTimes(end) + iterResult(end);
 ISAresult = ISAresult - ISAresult(end) + iterResult(end);
 %Fixing ISA too...
 
+Vt = calcVt(cumtrapz(startTimes, relTAC), relTAC, iterResult);
+
 figure;
 plot(times, CpIntAtTimes, ':', times, ISAresult, 'o-', ...
     times, iterResult, 'o-', times, model2E(results, times), 'o--');
 legend('real Cp result', 'ISA result', 'It Alg result', 'biexponential model');
 
-% Includes integral of Y squared.
-
 disp(['variables in model ' num2str(1) ':']);
 disp(results(:, 1)');
 disp(['Error in model' num2str(1) ' = ' num2str(error)]);
+disp('Vt = ');
+disp(Vt);
 
 %combined graph
 figure;
