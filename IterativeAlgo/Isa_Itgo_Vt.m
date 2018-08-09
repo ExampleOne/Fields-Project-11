@@ -164,7 +164,6 @@ results2 = zeros(5,1); % change #variable
 %real Cp data
 %%%%%%%%%%%%%%%%%%%calculate the factor for shifting the curve%%%%%%%%%%%%%
 % fitCpintAtSample = fity(results(:, 1), bloodDrawTime);
-% 
 % factor = singleBloodDraw*300/fitCpintAtSample;
 
 
