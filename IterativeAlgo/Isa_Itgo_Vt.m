@@ -16,14 +16,13 @@ Cpintlist = zeros(18,dim); %same thing with Cpint but in 2-dim
 startingFrame = 11;
 lastFrame = 28;
 sourceCp = dlmread('Data/Cps/pabloModel/pabloModel_0sigma.smpl', '\t', 1, 0);
-bloodDrawFrame = 20; % 15th frame
+bloodDrawFrame = 20; % 20th frame
 startTime = fulltac(bloodDrawFrame, 1);
 endTime = fulltac(bloodDrawFrame, 2);
 bloodDrawTime = (startTime  + endTime) / 2;
 singleBloodDraw = trapz(sourceCp(startTime:endTime, 2)) / ...
     (endTime - startTime);
 singleBloodDrawErrFactor = 10000;
-
 
 startTimes = trimmedTAC(:, 1);
 endTimes = trimmedTAC(:, 2);
@@ -34,8 +33,6 @@ for i = 1:n
     cti = datarelev(:,i);
     intcti = cumtrapz(trimmedTAC(:,1),datarelev(:,i));
     
-    %cpi = pdata(:,2);
-    %cpi = cumtrapz(pdata(:,1),pdata(:,2));
     for j = i + 1:n
          ctj = datarelev(:,j);
          intctj = cumtrapz(trimmedTAC(:,1),datarelev(:,j));
@@ -67,26 +64,26 @@ for l = 1:dim
     end
 end
 
-
 [M,minl] = min(dist);
 Cpint1 = Cpintlist(:,minl);
 
+%include the one sample blood data
 slope = (Cpint1(bloodDrawFrame - startingFrame + 1) - ...
     Cpint1(bloodDrawFrame - startingFrame)) / (endTime - startTime);
 Cpint1 = Cpint1 * singleBloodDraw / slope;
-
-
 ISAresult = Cpint1(:);
-va1 = zeros(2,n);
-Cpint2 = zeros(18,n);
+
 %%%%%begin the iterative algorithm part%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- max_err = 1e-10;
- err = 200;
+va1 = zeros(2,n);
+Cpint2 = zeros(18,n);
+max_err = 1e-10;
+err = 200;
 iteration = 1;
 
-while err > max_err
 %regression to get new set of Vt and b
+while err > max_err
+
         
         for i = 1:n
             cti = datarelev(:,i);
@@ -98,8 +95,6 @@ while err > max_err
            
         end   
 
-        %take averages to estimate the cpint in new iteration----no
-        %va2 = [mean(va1(1,:)),mean(va1(2,:))];
 
         %find the distance in loop
         dist = zeros(1,n);
@@ -114,13 +109,17 @@ while err > max_err
         [M,minl] = min(dist);
         err = norm(Cpint1 - Cpint2(:,minl));
         Cpint1 = Cpint2(:,minl);
+        %include the one sample blood data
+        slope = (Cpint1(bloodDrawFrame - startingFrame + 1) - ...
+        Cpint1(bloodDrawFrame - startingFrame)) / (endTime - startTime);
+        Cpint1 = Cpint1 * singleBloodDraw / slope;
+        ISAresult = Cpint1(:);
         %va1 = zeros(2,n);
         %Cpint2 = zeros(18,n);
         iteration = iteration + 1;
 end
 
-% Extraplolate
-% Cpint1ep = interp1(times, Cpint1, ox, 'linear', 'extrap');
+
 
 %%use Simulated Annealing to fit the CPint1%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -196,22 +195,25 @@ results2 = zeros(5,1); % change #variable
 % disp(['Error in model' num2str(2) ' = ' num2str(errors(1,2))]);
 
 %use model fitting ISA-italgo as fix point
+
 shift3 = oypint(end)-Cpint1(end);
 %combined graph
 figure;
 plot(otp, oypint, ':',times, Cpint1+shift3, 'bo', times, fity(results(:, 1), times)+shift3, 'r-');
 legend(['real Cp int' ], ['gened Cp int'], ['fit gened Cp int']);
 
-%calculate the Vt by Cpint
+%calculate the Vt 
 Vt = zeros(n,1);
 for i = 1:n
-            cti = datarelev(:,i);
-            intcti = cumtrapz(trimmedTAC(:,1),datarelev(:,i));
-            dependentvariable = intcti(2:end)./cti(2:end);
-            regressor = (Cpint1(2:end,:)+shift3)./cti(2:end);
-            lm = fitglm(regressor,dependentvariable,'linear');
-            coeffest = lm.Coefficients.Estimate;
-            Vt(i,1) = coeffest(end);
+        cti = datarelev(:,i);
+        intcti = cumtrapz(trimmedTAC(:,1),datarelev(:,i));
+       
+        %use logan plot expression to calculate Vt by lm
+        dependentvariable = intcti(2:end)./cti(2:end);
+        regressor = (Cpint1(2:end,:)+shift3)./cti(2:end);
+        lm = fitglm(regressor,dependentvariable,'linear');
+        coeffest = lm.Coefficients.Estimate;
+        Vt(i,1) = coeffest(end);
 end   
 
 uisave;

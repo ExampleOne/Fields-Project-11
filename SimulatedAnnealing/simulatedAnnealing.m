@@ -23,6 +23,18 @@ function [ optSoFar ] = simulatedAnnealing( objFunc, initial, lower, ...
     % These could really be function parameters...
     % Using recommended values from Corana et al.
     
+    assert(all(size(initial) == size(lower)) && ...
+        all(size(lower) == size(upper)), ...
+        'dimensions of initial, lower, and upper must be the same');
+    for ii = 1:numel(initial)
+        if lower(ii) > initial(ii)
+            initial(ii) = lower(ii);
+            warning('Initial value exceeds lower bound!! Forcing into bounds...');
+        elseif upper(ii) < initial(ii)
+            initial(ii) = upper(ii);
+            warning('Initial value exceeds upper bound!! Forcing into bounds...');
+        end
+    end
     
     step = (upper - lower)/2;
     changeCount = zeros(size(initial));
