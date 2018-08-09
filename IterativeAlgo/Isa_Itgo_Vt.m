@@ -109,11 +109,6 @@ while err > max_err
         [M,minl] = min(dist);
         err = norm(Cpint1 - Cpint2(:,minl));
         Cpint1 = Cpint2(:,minl);
-        %include the one sample blood data
-        slope = (Cpint1(bloodDrawFrame - startingFrame + 1) - ...
-        Cpint1(bloodDrawFrame - startingFrame)) / (endTime - startTime);
-        Cpint1 = Cpint1 * singleBloodDraw / slope;
-        ISAresult = Cpint1(:);
         %va1 = zeros(2,n);
         %Cpint2 = zeros(18,n);
         iteration = iteration + 1;
@@ -151,12 +146,10 @@ tp = otp(otp >= 1500);
 ypint = cumtrapz(tp, yp);
 
 CpIntAtTimes = interp1(oypint, times);
-shift1 = CpIntAtTimes(end) - ISAresult(end);
-shift2 = CpIntAtTimes(end) - Cpint1(end);
 
 figure;
-plot(otp, oypint, ':', times, ISAresult+shift1, 'o-', ...
-    times, Cpint1+shift2, 'o-', times, fity(results(:, 1), times)+shift2, 'o--');
+plot(otp, oypint, ':', times, ISAresult, 'o-', ...
+    times, Cpint1, 'o-', times, fity(results(:, 1), times), 'o--');
 legend('real Cp result', 'ISA result', 'It Alg result 1', 'biexp_model');
 
 errors (1,1) = phi1(results(:, 1))/trapz(Cpint1.^2) ;
@@ -169,6 +162,11 @@ disp(['Error in model' num2str(1) ' = ' num2str(errors(1,1))]);
     
 results2 = zeros(5,1); % change #variable
 %real Cp data
+%%%%%%%%%%%%%%%%%%%calculate the factor for shifting the curve%%%%%%%%%%%%%
+% fitCpintAtSample = fity(results(:, 1), bloodDrawTime);
+% 
+% factor = singleBloodDraw*300/fitCpintAtSample;
+
 
 
 % fitp = @(b,x) b(1)*exp(-b(2)*x) + b(3)*exp(-b(4)*x)+b(5); %#change format
@@ -196,24 +194,24 @@ results2 = zeros(5,1); % change #variable
 
 %use model fitting ISA-italgo as fix point
 
-shift3 = oypint(end)-Cpint1(end);
+%shift3 = oypint(end)-Cpint1(end);
 %combined graph
 figure;
-plot(otp, oypint, ':',times, Cpint1+shift3, 'bo', times, fity(results(:, 1), times)+shift3, 'r-');
+plot(otp, oypint, ':',times, Cpint1, 'bo', times, fity(results(:, 1), times), 'r-');
 legend(['real Cp int' ], ['gened Cp int'], ['fit gened Cp int']);
 
 %calculate the Vt 
-Vt = zeros(n,1);
-for i = 1:n
-        cti = datarelev(:,i);
-        intcti = cumtrapz(trimmedTAC(:,1),datarelev(:,i));
-       
-        %use logan plot expression to calculate Vt by lm
-        dependentvariable = intcti(2:end)./cti(2:end);
-        regressor = (Cpint1(2:end,:)+shift3)./cti(2:end);
-        lm = fitglm(regressor,dependentvariable,'linear');
-        coeffest = lm.Coefficients.Estimate;
-        Vt(i,1) = coeffest(end);
-end   
+% Vt = zeros(n,1);
+% for i = 1:n
+%         cti = datarelev(:,i);
+%         intcti = cumtrapz(trimmedTAC(:,1),datarelev(:,i));
+%        
+%         %use logan plot expression to calculate Vt by lm
+%         dependentvariable = intcti(2:end)./cti(2:end);
+%         regressor = (Cpint1(2:end,:))./cti(2:end);
+%         [ERR,P] = fit_2D_data(regressor,dependentvariable,'no');
+%         coeffest = P(1);
+%         Vt(i,1) = coeffest;
+% end   
 
 uisave;
