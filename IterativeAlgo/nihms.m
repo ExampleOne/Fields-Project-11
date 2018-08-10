@@ -2,50 +2,53 @@ clear variables;
 format short g;
 format compact;
 
+ideal = 0;
+regions = [3 4 7 8 9 10];
+
 startingFrame = 11;
 lastFrame = 28;
 %Tac simulated from Pablo model
 fullTAC = dlmread('Data/TACs/pabloModel_0vb/0noise/fullTAC0sigma.tac', '\t', 1, 0);
-trimmedTAC = fullTAC(startingFrame:lastFrame, :);
-relTAC = trimmedTAC(:,[3 4 7 8 9 10]); %the 6 brain regions
+startTimes = fullTAC(:, 1);
+endTimes = fullTAC(:, 2);
+relTAC = fullTAC(:, regions); %the 6 brain regions
+relTACint = cumtrapz(startTimes, relTAC);
+relTAC = relTAC(startingFrame:end, :);
+relTACint = relTACint(startingFrame:end, :);
 
 sourceCp = dlmread('Data/Cps/pabloModel/pabloModel_0sigma.smpl', '\t', 1, 0);
 bloodDrawFrame = 20; % 15th frame
-startTime = fullTAC(bloodDrawFrame, 1);
-endTime = fullTAC(bloodDrawFrame, 2);
-bloodDrawTime = (startTime  + endTime) / 2;
-singleBloodDraw = trapz(sourceCp(startTime:endTime, 2)) / ...
-    (endTime - startTime);
+startBlood = fullTAC(bloodDrawFrame, 1);
+endBlood = fullTAC(bloodDrawFrame, 2);
+bloodDrawTime = (startBlood  + endBlood) / 2;
+singleBloodDraw = trapz(sourceCp(startBlood:endBlood, 2)) / ...
+    (endBlood - startBlood);
 bloodDrawErrFactor = 1e6;
 
-startTimes = trimmedTAC(:, 1);
-endTimes = trimmedTAC(:, 2);
-
-ISAresult = ISA(relTAC, startTimes);
+ISAresult = ISA(relTAC, relTACint);
 
 %Adjust for single blood draw
 slope = (ISAresult(bloodDrawFrame - startingFrame + 1) - ...
-    ISAresult(bloodDrawFrame - startingFrame)) / (endTime - startTime);
+    ISAresult(bloodDrawFrame - startingFrame)) / (endBlood - startBlood);
 ISAresult = ISAresult * singleBloodDraw / slope;
 
-iterResult = IterativeAlgorithm(relTAC, ISAresult, startTimes);
+iterResult = IterativeAlgorithm(relTAC, relTACint, ISAresult);
 
 %Fit curve with biexponential model
-times = (trimmedTAC(:,1) + trimmedTAC(:, 2)) / 2;
+times = (startTimes(startingFrame:end) + endTimes(startingFrame:end)) / 2;
 
 [results, error] = fit2E(iterResult, times, singleBloodDraw, bloodDrawTime, ...
     bloodDrawErrFactor);
 
 %%% Display data...
+startTime = fullTAC(startingFrame, 1);
+sourceCp = sourceCp(sourceCp(:, 1) > startTime, :);
 sourceCpInt = cumtrapz(sourceCp(:, 1), sourceCp(:, 2));
+% Where to start intCp calculation?
 
-CpIntAtTimes = interp1(sourceCpInt, times);
-CpIntAtTimes = CpIntAtTimes - CpIntAtTimes(end) + iterResult(end);
-%Fix end, not start!!
-ISAresult = ISAresult - ISAresult(end) + iterResult(end);
-%Fixing ISA too...
+CpIntAtTimes = interp1(sourceCp(:, 1), sourceCpInt, times);
 
-Vt = calcVt(cumtrapz(startTimes, relTAC), relTAC, iterResult);
+Vt = calcVt(relTACint, relTAC, iterResult);
 
 figure;
 plot(times, CpIntAtTimes, ':', times, ISAresult, 'o-', ...

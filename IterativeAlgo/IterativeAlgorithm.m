@@ -1,7 +1,7 @@
-function bestCpInt = IterativeAlgorithm(TACs, initialCp, startTimes)
+function bestCpInt = IterativeAlgorithm(TAC, TACint, initialCp)
 %ITERATIVEALGORITHM Performs the Iterative Algorithm described in NIHMS
 %   Repetetively performs a linear regression to predict CpInt
-    numRegions = size(TACs, 2);
+    numRegions = size(TAC, 2);
     va1 = zeros(2, numRegions);
     Cpint2 = zeros(18, numRegions);
     max_err = 1;
@@ -11,12 +11,12 @@ function bestCpInt = IterativeAlgorithm(TACs, initialCp, startTimes)
     while err > max_err
     %regression to get new set of Vt and b
         for i = 1:numRegions
-            cti = TACs(:,i);
-            intcti = cumtrapz(startTimes, TACs(:,i));
-            Cpint1lm = fitglm([cti,intcti], bestCpInt,'linear');
+            cti = TAC(:, i);
+            intcti = TACint(:, i);
+            Cpint1lm = fitglm([cti, intcti], bestCpInt,'linear');
             vatemp = Cpint1lm.Coefficients.Estimate;
-            va1(:,i) = vatemp(2:end);
-            Cpint2(:,i) = va1(1,i)*cti + va1(2,i)*intcti;
+            va1(:, i) = vatemp(2:end);
+            Cpint2(:, i) = va1(1, i)*cti + va1(2, i)*intcti;
         end   
 
         %take averages to estimate the cpint in new iteration----no
