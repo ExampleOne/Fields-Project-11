@@ -11,28 +11,28 @@ lastFrame = 28;
 fullTAC = dlmread('Data/TACs/pabloModel_0vb/0noise/fullTAC0sigma.tac', '\t', 1, 0);
 startTimes = fullTAC(:, 1);
 endTimes = fullTAC(:, 2);
-relTAC = fullTAC(:, regions); %the 6 brain regions
-relTACint = cumtrapz(startTimes, relTAC);
-relTAC = relTAC(startingFrame:end, :);
-relTACint = relTACint(startingFrame:end, :);
+TAC = fullTAC(:, regions); %the 6 brain regions
+TACint = cumtrapz(endTimes, TAC);
+TAC = TAC(startingFrame:end, :);
+TACint = TACint(startingFrame:end, :);
 
 sourceCp = dlmread('Data/Cps/pabloModel/pabloModel_0sigma.smpl', '\t', 1, 0);
 bloodDrawFrame = 20; % 15th frame
-startBlood = fullTAC(bloodDrawFrame, 1);
-endBlood = fullTAC(bloodDrawFrame, 2);
+startBlood = startTimes(bloodDrawFrame);
+endBlood = endTimes(bloodDrawFrame);
 bloodDrawTime = (startBlood  + endBlood) / 2;
 singleBloodDraw = trapz(sourceCp(startBlood:endBlood, 2)) / ...
     (endBlood - startBlood);
 bloodDrawErrFactor = 1e6;
 
-ISAresult = ISA(relTAC, relTACint);
+ISAresult = ISA(TAC, TACint);
 
 %Adjust for single blood draw
 slope = (ISAresult(bloodDrawFrame - startingFrame + 1) - ...
     ISAresult(bloodDrawFrame - startingFrame)) / (endBlood - startBlood);
 ISAresult = ISAresult * singleBloodDraw / slope;
 
-iterResult = IterativeAlgorithm(relTAC, relTACint, ISAresult);
+iterResult = IterativeAlgorithm(TAC, TACint, ISAresult);
 
 %Fit curve with biexponential model
 times = (startTimes(startingFrame:end) + endTimes(startingFrame:end)) / 2;
@@ -48,7 +48,7 @@ sourceCpInt = cumtrapz(sourceCp(:, 1), sourceCp(:, 2));
 
 CpIntAtTimes = interp1(sourceCp(:, 1), sourceCpInt, times);
 
-Vt = calcVt(relTACint, relTAC, iterResult);
+Vt = calcVt(TACint, TAC, iterResult);
 
 figure;
 plot(times, CpIntAtTimes, ':', times, ISAresult, 'o-', ...
