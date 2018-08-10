@@ -3,11 +3,8 @@ function Vt = calcVt(TACint, TACs, Cpint)
 %   Uses Logan method.
     Vt = zeros(size(TACs, 2), 1);
     for ii = 1:size(TACs, 2)
-%         X = [ones(size(TACs, 1), 1) Cpint ./ TACs(:, ii)];
-%         B = X \ (TACint(:, ii) ./ TACs(:, ii));
-%         Vt(ii) = B(2);
-        X = [ Cpint TACs(:, ii)];
-        B = X \ TACint(:, ii);
+        [~, B] = fit_2D_data(Cpint ./ TACs(:, ii), ...
+            TACint(:, ii) ./ TACs(:, ii), 'no');
         Vt(ii) = B(1);
     end
 end

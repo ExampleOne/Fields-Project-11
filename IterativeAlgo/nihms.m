@@ -42,7 +42,7 @@ times = (startTimes(startingFrame:end) + endTimes(startingFrame:end)) / 2;
 
 %%% Display data...
 startTime = fullTAC(startingFrame, 1);
-sourceCp = sourceCp(sourceCp(:, 1) > startTime, :);
+% sourceCp = sourceCp(sourceCp(:, 1) > startTime, :);
 sourceCpInt = cumtrapz(sourceCp(:, 1), sourceCp(:, 2));
 % Where to start intCp calculation?
 
