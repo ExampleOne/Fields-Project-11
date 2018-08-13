@@ -11,7 +11,6 @@ trimmedTAC = fulltac(end - plotpoints + 1:end, :);
 datarelev = trimmedTAC(:,[3 4 7 8 9 10]); %the 6 brain regions
 fulldatarelev =fulltac(:,[3 4 7 8 9 10]);
 
-
 n = size(datarelev,2);
 k = 1; %counter
 diff = zeros(plotpoints,n,n);
