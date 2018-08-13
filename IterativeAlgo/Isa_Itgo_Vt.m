@@ -1,20 +1,35 @@
 clear variable;
 %Tac simulated from Pablo model
 fulltac = dlmread(['Data/TACs/pabloModel/0noise0vb/fullTAC0sigma.tac'], '\t', 1, 0);
-trimmedTAC = fulltac(end - 17:end, :);
+startingFrame = 11;
+lastFrame = 28;
+plotpoints = lastFrame - startingFrame + 1;
+totalpoints = size(fulltac,1);
+
+trimmedTAC = fulltac(end - plotpoints + 1:end, :);
 % pdata = plasmafile
 datarelev = trimmedTAC(:,[3 4 7 8 9 10]); %the 6 brain regions
+fulldatarelev =fulltac(:,[3 4 7 8 9 10]);
+
 
 n = size(datarelev,2);
 k = 1; %counter
-diff = zeros(18,6,6);
-Cpint = zeros(18,6,6);
+diff = zeros(plotpoints,n,n);
+Cpint = zeros(plotpoints,n,n);
 dim = n*(n-1)/2;
-Cpintlist = zeros(18,dim); %same thing with Cpint but in 2-dim
+Cpintlist = zeros(plotpoints,dim); %same thing with Cpint but in 2-dim
 %va = zeros(4,dim);      %the [a1i,a2i,a1j,a2j] in Fields
 
-startingFrame = 11;
-lastFrame = 28;
+intfulltac = zeros(totalpoints,n);
+
+for i = 1:n
+    intfulltac(:,i) = cumtrapz(fulltac(:,1),fulldatarelev(:,i));
+    temp = intfulltac(:,i);
+end
+
+trimmedintTAC = intfulltac(end - plotpoints + 1:end,:);
+
+
 sourceCp = dlmread('Data/Cps/pabloModel/pabloModel_0sigma.smpl', '\t', 1, 0);
 bloodDrawFrame = 20; % 20th frame
 startTime = fulltac(bloodDrawFrame, 1);
@@ -31,11 +46,11 @@ endTimes = trimmedTAC(:, 2);
 %ISA part
 for i = 1:n
     cti = datarelev(:,i);
-    intcti = cumtrapz(trimmedTAC(:,1),datarelev(:,i));
+    intcti = trimmedintTAC(:,i);
     
-    for j = i + 1:n
+    for j = i + 1 : n
          ctj = datarelev(:,j);
-         intctj = cumtrapz(trimmedTAC(:,1),datarelev(:,j));
+         intctj = trimmedintTAC(:,j);
          % find the right singular vector va corresponding to smallest
          % right singular value of c4
          c4 = [cti(2:end),intcti(2:end),ctj(2:end),intctj(2:end)];
@@ -70,8 +85,23 @@ Cpint1 = Cpintlist(:,minl);
 %include the one sample blood data
 slope = (Cpint1(bloodDrawFrame - startingFrame + 1) - ...
     Cpint1(bloodDrawFrame - startingFrame)) / (endTime - startTime);
-Cpint1 = Cpint1 * singleBloodDraw / slope;
-ISAresult = Cpint1(:);
+Cpint1 = Cpint1 * singleBloodDraw / slope +725*60;
+ISAresult = Cpint1(:)+725*60;
+
+
+VtISA = zeros(n,1);
+for i = 1:n
+        cti = datarelev(:,i);
+        intcti = trimmedintTAC(:,i);
+       
+        %use logan plot expression to calculate Vt by lm
+        dependentvariable = intcti(2:end)./cti(2:end);
+        regressor = (Cpint1(2:end,:))./cti(2:end);
+        [ERR,P] = fit_2D_data(regressor,dependentvariable,'no');
+        coeffest = P(1);
+        VtISA(i,1) = coeffest;
+end   
+
 
 %%%%%begin the iterative algorithm part%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -87,7 +117,7 @@ while err > max_err
         
         for i = 1:n
             cti = datarelev(:,i);
-            intcti = cumtrapz(trimmedTAC(:,1),datarelev(:,i));
+            intcti = trimmedintTAC(:,i);
             Cpint1lm = fitglm([cti,intcti],Cpint1,'linear');
             vatemp = Cpint1lm.Coefficients.Estimate;
             va1(:,i) = vatemp(2:end);
@@ -147,24 +177,15 @@ ypint = cumtrapz(tp, yp);
 
 CpIntAtTimes = interp1(oypint, times);
 
-figure;
-plot(otp, oypint, ':', times, ISAresult, 'o-', ...
-    times, Cpint1, 'o-', times, fity(results(:, 1), times), 'o--');
-legend('real Cp result', 'ISA result', 'It Alg result 1', 'biexp_model');
-
-errors (1,1) = phi1(results(:, 1))/trapz(Cpint1.^2) ;
-
-% Includes integral of Y squared.
-
-disp(['variables in model ' num2str(1) ':']);
-disp(results(:, 1)');
-disp(['Error in model' num2str(1) ' = ' num2str(errors(1,1))]);
-    
-results2 = zeros(5,1); % change #variable
 %real Cp data
-%%%%%%%%%%%%%%%%%%%calculate the factor for shifting the curve%%%%%%%%%%%%%
-% fitCpintAtSample = fity(results(:, 1), bloodDrawTime);
-% factor = singleBloodDraw*300/fitCpintAtSample;
+%%%%%%%%%%%%%%%%%%%calculate the factor for Cpint%%%%%%%%%%%%%
+fitCpintAtSample = fity(results(:, 1), endTime)-fity(results(:, 1), startTime);
+Cpintfactor = trapz(sourceCp(startTime:endTime, 2))/fitCpintAtSample;
+
+%%%%%%%%%%%%%%%%%%%calculate the factor for Cp%%%%%%%%%%%%%%%%
+fitCpAtSample = results(1,1)*results(2,1)*exp(-results(2,1)*bloodDrawTime)+...
+                results(3,1)*results(4,1)*exp(-results(4,1)*bloodDrawTime);
+Cpfactor = singleBloodDraw/fitCpAtSample;
 
 
 
@@ -192,25 +213,39 @@ results2 = zeros(5,1); % change #variable
 % disp(['Error in model' num2str(2) ' = ' num2str(errors(1,2))]);
 
 %use model fitting ISA-italgo as fix point
+figure;
+plot(otp, oypint, ':', times, ISAresult, 'o-', ...
+    times, Cpint1, 'o-', times, fity(results(:, 1), times), 'o--');
+legend('real Cp result', 'ISA result', 'It Alg result 1', 'biexp_model');
 
-%shift3 = oypint(end)-Cpint1(end);
+errors (1,1) = phi1(results(:, 1))/trapz(Cpint1.^2) ;
+
+% Includes integral of Y squared.
+
+disp(['variables in model ' num2str(1) ':']);
+disp(results(:, 1)');
+disp(['Error in model' num2str(1) ' = ' num2str(errors(1,1))]);
+    
+
+
+shift3 = oypint(end)-Cpint1(end);
 %combined graph
 figure;
 plot(otp, oypint, ':',times, Cpint1, 'bo', times, fity(results(:, 1), times), 'r-');
 legend(['real Cp int' ], ['gened Cp int'], ['fit gened Cp int']);
 
-%calculate the Vt 
-% Vt = zeros(n,1);
-% for i = 1:n
-%         cti = datarelev(:,i);
-%         intcti = cumtrapz(trimmedTAC(:,1),datarelev(:,i));
-%        
-%         %use logan plot expression to calculate Vt by lm
-%         dependentvariable = intcti(2:end)./cti(2:end);
-%         regressor = (Cpint1(2:end,:))./cti(2:end);
-%         [ERR,P] = fit_2D_data(regressor,dependentvariable,'no');
-%         coeffest = P(1);
-%         Vt(i,1) = coeffest;
-% end   
+%%%%calculate the Vt 
+Vt = zeros(n,1);
+for i = 1:n
+        cti = datarelev(:,i);
+        intcti = cumtrapz(trimmedTAC(:,1),datarelev(:,i));
+       
+        %use logan plot expression to calculate Vt by lm
+        dependentvariable = intcti(2:end)./cti(2:end);
+        regressor = (Cpint1(2:end,:)*Cpintfactor)./cti(2:end);
+        [ERR,P] = fit_2D_data(regressor,dependentvariable,'no');
+        coeffest = P(1);
+        Vt(i,1) = coeffest;
+end   
 
 uisave;
