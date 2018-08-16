@@ -1,6 +1,6 @@
 clear variable;
 %Tac simulated from Pablo model
-fulltac = dlmread(['Data/TACs/pabloModel/0noise0vb/fullTAC0sigma.tac'], '\t', 1, 0);
+fulltac = dlmread(['Data/TACs/pabloModel/0noise0vb/fullTAC1sigma.tac'], '\t', 1, 0);
 startingFrame = 11;
 lastFrame = 28;
 plotpoints = lastFrame - startingFrame + 1;
@@ -89,6 +89,7 @@ ISAresult = Cpint1(:)+725*60;
 
 
 VtISA = zeros(n,1);
+b = zeros(n,1);
 for i = 1:n
         cti = datarelev(:,i);
         intcti = trimmedintTAC(:,i);
@@ -97,10 +98,11 @@ for i = 1:n
         dependentvariable = intcti(2:end)./cti(2:end);
         regressor = (Cpint1(2:end,:))./cti(2:end);
         [ERR,P] = fit_2D_data(regressor,dependentvariable,'no');
-        coeffest = P(1);
-        VtISA(i,1) = coeffest;
+        VtISA(i,1) = P(1);
+        b(i,1) = P(2);
 end   
 
+%PreditedTAC =
 
 %%%%%begin the iterative algorithm part%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -214,12 +216,12 @@ Cpfactor = singleBloodDraw/fitCpAtSample;
 %use model fitting ISA-italgo as fix point
 figure;
 plot(otp, oypint, ':', times, ISAresult, 'o-', ...
-    times, Cpint1, 'o-', times, fity(results(:, 1), times), 'o--');
-legend('real Cp result', 'ISA result', 'It Alg result 1', 'biexp_model');
+    times, Cpint1, 'o-');
+legend('real Cp result', 'ISA result', 'It Alg result 1');
 
-errors (1,1) = phi1(results(:, 1))/trapz(Cpint1.^2) ;
+%errors (1,1) = phi1(results(:, 1))/trapz(Cpint1.^2) ;
 
-% Includes integral of Y squared.
+%Includes integral of Y squared.
 
 disp(['variables in model ' num2str(1) ':']);
 disp(results(:, 1)');
@@ -227,11 +229,12 @@ disp(['Error in model' num2str(1) ' = ' num2str(errors(1,1))]);
     
 
 
-shift3 = oypint(end)-Cpint1(end);
+%shift3 = oypint(end)-Cpint1(end);
 %combined graph
 figure;
 plot(otp, oypint, ':',times, Cpint1, 'bo', times, fity(results(:, 1), times), 'r-');
 legend(['real Cp int' ], ['gened Cp int'], ['fit gened Cp int']);
+% 
 
 %%%%calculate the Vt 
 Vt = zeros(n,1);
@@ -246,5 +249,10 @@ for i = 1:n
         coeffest = P(1);
         Vt(i,1) = coeffest;
 end   
+
+disp('Vt:=');
+disp(Vt);
+disp('Vt from ISA = ');
+disp(VtISA);
 
 uisave;
