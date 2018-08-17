@@ -23,7 +23,7 @@ singleBloodDraw = trapz(sourceCp(startBlood:endBlood, 2)) / ...
 bloodDrawErrFactor = 1e6;
 
 %CALCULATING AUC!!!
-earlyIndices = sourceCp(:, 1) < startTimes(startFrame);
+earlyIndices = sourceCp(:, 1) < startTimes(startingFrame);
 auc = trapz(sourceCp(earlyIndices, 1), sourceCp(earlyIndices, 2));
 
 ISAresult = ISA(TAC, TACint) + auc;
@@ -33,10 +33,7 @@ slope = (ISAresult(bloodDrawFrame - startingFrame + 1) - ...
     ISAresult(bloodDrawFrame - startingFrame)) / (endBlood - startBlood);
 ISAresult = ISAresult * singleBloodDraw / slope;
 
-iterResult = IterativeAlgorithm(TAC, TACint, ISAresult);
-
-Vt = calcVt(TACint, TAC, iterResult);
-% Vt = FIELDS_lam_logan_plasma(TACPath, regions - 2, CpPath, CpPath, 0, 0, 0, CpPath, 0);
+[iterResult, Vt] = IterativeAlgorithm(TAC, TACint, ISAresult);
 
 if showGraphs
     %Fit curve with biexponential model
