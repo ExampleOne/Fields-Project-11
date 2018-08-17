@@ -1,6 +1,6 @@
 clear variable;
 %Tac simulated from Pablo model
-fulltac = dlmread(['Data/TACs/pabloModel/0noise0vb/fullTAC1sigma.tac'], '\t', 1, 0);
+fulltac = dlmread(['Data/TACs/pabloModel/0noise0vb/fullTAC0sigma.tac'], '\t', 1, 0);
 startingFrame = 11;
 lastFrame = 28;
 plotpoints = lastFrame - startingFrame + 1;

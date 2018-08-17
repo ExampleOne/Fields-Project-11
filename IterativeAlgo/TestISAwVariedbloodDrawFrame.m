@@ -1,6 +1,8 @@
 clear variable;
 %Tac simulated from Pablo model
-fulltac = dlmread(['Data/TACs/pabloModel/0noise0vb/fullTAC1sigma.tac'], '\t', 1, 0);
+fulltac = dlmread(['Data/TACs/pabloModel/0noise0vb/fullTAC-2sigma.tac'], '\t', 1, 0);
+sourceCp = dlmread('Data/Cps/pabloModel/pabloModel_0.2sigma.smpl', '\t', 1, 0);
+
 startingFrame = 11;
 lastFrame = 28;
 plotpoints = lastFrame - startingFrame + 1;
@@ -29,12 +31,11 @@ end
 trimmedintTAC = intfulltac(end - plotpoints + 1:end,:);
 
 
-sourceCp = dlmread('Data/Cps/pabloModel/pabloModel_0sigma.smpl', '\t', 1, 0);
 frame = startingFrame:lastFrame;
 lframe = size(frame,2);
 VtISA = zeros(6,lframe-2);
 
-for i = startingFrame + 1:lastFrame-1
+for i = startingFrame + 1:1:lastFrame-1
     
     bloodDrawFrame = i; % 20th frame
     
@@ -50,11 +51,11 @@ for i = startingFrame + 1:lastFrame-1
 
 
     %ISA part
-    for i = 1:n
-        cti = datarelev(:,i);
-        intcti = trimmedintTAC(:,i);
+    for m = 1:n
+        cti = datarelev(:,m);
+        intcti = trimmedintTAC(:,m);
 
-        for j = i + 1 : n
+        for j = m + 1 : n
              ctj = datarelev(:,j);
              intctj = trimmedintTAC(:,j);
              % find the right singular vector va corresponding to smallest
@@ -64,9 +65,9 @@ for i = startingFrame + 1:lastFrame-1
              %va(:,k) = V(:,end);
 
              %evaluate the first guesses of Cpint
-             diff(:,i,j) = abs(V(1,end)*cti + V(2,end)*intcti + (V(3,end)*ctj + V(4,end)*intctj));
-             Cpint(:,i,j) = abs(V(1,end))*cti +abs(V(2,end))*intcti;
-             Cpintlist(:,k) = Cpint(:,i,j);
+             diff(:,m,j) = abs(V(1,end)*cti + V(2,end)*intcti + (V(3,end)*ctj + V(4,end)*intctj));
+             Cpint(:,m,j) = abs(V(1,end))*cti +abs(V(2,end))*intcti;
+             Cpintlist(:,k) = Cpint(:,m,j);
              k = k+1;
         end
 
@@ -74,7 +75,7 @@ for i = startingFrame + 1:lastFrame-1
 
 
     end
-
+   
     %find one cpint which minimize the summation of distances
     dist = zeros(1,dim);
 
@@ -87,7 +88,7 @@ for i = startingFrame + 1:lastFrame-1
 
     [M,minl] = min(dist);
     Cpint1 = Cpintlist(:,minl);
-
+    
     %include the one sample blood data
     slope = (Cpint1(bloodDrawFrame - startingFrame + 1) - ...
         Cpint1(bloodDrawFrame - startingFrame)) / (endTime - startTime);
