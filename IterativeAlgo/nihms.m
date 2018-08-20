@@ -26,12 +26,12 @@ bloodDrawErrFactor = 1e6;
 earlyIndices = sourceCp(:, 1) < startTimes(startingFrame);
 auc = trapz(sourceCp(earlyIndices, 1), sourceCp(earlyIndices, 2));
 
-ISAresult = ISA(TAC, TACint) + auc;
+ISAresult = ISA(TAC, TACint);
 
 %Adjust for single blood draw
 slope = (ISAresult(bloodDrawFrame - startingFrame + 1) - ...
     ISAresult(bloodDrawFrame - startingFrame)) / (endBlood - startBlood);
-ISAresult = ISAresult * singleBloodDraw / slope;
+ISAresult = ISAresult * singleBloodDraw / slope + auc;
 
 [iterResult, Vt] = IterativeAlgorithm(TAC, TACint, ISAresult);
 

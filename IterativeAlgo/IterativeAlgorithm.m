@@ -4,7 +4,7 @@ function [CpInt, Vt] = IterativeAlgorithm(TAC, TACint, initialCp)
     numRegions = size(TAC, 2);
     Vts = zeros(numRegions, 5);
     bs = zeros(numRegions, 5);
-    threshold = 1e-4;
+    threshold = 1e-7;
     
     shouldContinue = true;
     CpInt = initialCp;
