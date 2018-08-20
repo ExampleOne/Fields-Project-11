@@ -31,7 +31,9 @@ ISAresult = ISA(TAC, TACint);
 %Adjust for single blood draw
 slope = (ISAresult(bloodDrawFrame - startingFrame + 1) - ...
     ISAresult(bloodDrawFrame - startingFrame)) / (endBlood - startBlood);
-ISAresult = ISAresult * singleBloodDraw / slope + auc;
+ISAresult = ISAresult * singleBloodDraw / slope;
+ISAresult = ISAresult + auc - ISAresult(1);
+% ie. we *fix* the first point of ISA!!! This is quite important.
 
 [iterResult, Vt] = IterativeAlgorithm(TAC, TACint, ISAresult);
 

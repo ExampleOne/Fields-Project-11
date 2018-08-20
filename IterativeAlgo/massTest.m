@@ -9,9 +9,9 @@ numTrials = 20;
 sigmas = -2:0.2:2;
 Vts = zeros(numRegions, numNoises, length(sigmas), numTrials);
 
-tic;
+
 for sigmaInd = 1:length(sigmas)
-    
+    tic;
     sigma = sigmas(sigmaInd);
     TACPath = ['/home/qtupker/Documents/Fields Project 11/workspace4/' ...
         'Square3EinputFunction/pabloModelTACs_0vb/0noise/fullTAC' ...
@@ -19,9 +19,10 @@ for sigmaInd = 1:length(sigmas)
     CpPath = ['/home/qtupker/Documents/Fields Project 11/workspace4/' ...
         'Square3EinputFunction/Cps/pabloModel_' num2str(sigma) 'sigma.smpl'];
     Vts(:, 1, sigmaInd, 1) = nihms(TACPath, CpPath, false, false);
-    
+    toc;
 end
-toc;
+
+Vts = permute(Vts, [1 3 2 4]);
     
     
 
