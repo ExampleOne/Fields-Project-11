@@ -9,7 +9,7 @@ fullTAC = dlmread(TACpath, '\t', 1, 0);
 startTimes = fullTAC(:, 1);
 endTimes = fullTAC(:, 2);
 TAC = fullTAC(:, regions); %the 6 brain regions
-TACint = cumtrapz(startTimes, TAC);
+TACint = cumsum((endTimes - startTimes) .* TAC);
 TAC = TAC(startingFrame:end, :);
 TACint = TACint(startingFrame:end, :);
 

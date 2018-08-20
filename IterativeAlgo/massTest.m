@@ -18,12 +18,15 @@ for sigmaInd = 1:length(sigmas)
         num2str(sigma) 'sigma.tac'];
     CpPath = ['/home/qtupker/Documents/Fields Project 11/workspace4/' ...
         'Square3EinputFunction/Cps/pabloModel_' num2str(sigma) 'sigma.smpl'];
-    Vts(:, 1, sigmaInd, 1) = nihms(TACPath, CpPath, true, false);
+    Vts(:, 1, sigmaInd, 1) = nihms(TACPath, CpPath, false, false);
     toc;
 end
 
 Vts = permute(Vts, [1 3 2 4]);
 Vts = Vts(:, :, 1, 1);
+for ii = 1:21
+    disp(Vts(:, ii))
+end
     
     
 
