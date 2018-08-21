@@ -1,11 +1,11 @@
-function Vt = nihms(TACpath, CpPath, showGraphs, showText)
+function Vt = nihms(TACPath, CpPath, showGraphs, showText)
 %NIHMS implements the method described in the NIHMS paper
 %
 
-regions = [3 4 7 8 9 10];
+regions = [3 4 7 8 9 10 11];
 
 startingFrame = 11;
-fullTAC = dlmread(TACpath, '\t', 1, 0);
+fullTAC = dlmread(TACPath, '\t', 1, 0);
 startTimes = fullTAC(:, 1);
 endTimes = fullTAC(:, 2);
 TAC = fullTAC(:, regions); %the 6 brain regions
@@ -22,17 +22,12 @@ singleBloodDraw = trapz(sourceCp(startBlood:endBlood, 2)) / ...
     (endBlood - startBlood);
 bloodDrawErrFactor = 1e6;
 
-%CALCULATING AUC!!!
-earlyIndices = sourceCp(:, 1) < startTimes(startingFrame);
-auc = trapz(sourceCp(earlyIndices, 1), sourceCp(earlyIndices, 2));
-
 ISAresult = ISA(TAC, TACint);
 
 %Adjust for single blood draw
 slope = (ISAresult(bloodDrawFrame - startingFrame + 1) - ...
     ISAresult(bloodDrawFrame - startingFrame)) / (endBlood - startBlood);
 ISAresult = ISAresult * singleBloodDraw / slope;
-ISAresult = ISAresult + auc - ISAresult(1);
 % ie. we *fix* the first point of ISA!!! This is quite important.
 
 [iterResult, Vt] = IterativeAlgorithm(TAC, TACint, ISAresult);
