@@ -2,36 +2,37 @@ clear variables;
 format short g;
 format compact;
 
+sigmas = -2:0.2:2;
+noises = 0:10;
+
 numRegions = 6;
-numNoises = 11;
+numNoises = length(noises);
 numTrials = 20;
 
-sigmas = -2:0.2:2;
-Vts = zeros(numRegions, numNoises, length(sigmas), numTrials);
+Vts = zeros(numRegions, length(sigmas), numNoises, numTrials);
+DVRs = zeros(numRegions - 1, length(sigmas), numNoises, numTrials);
 
-
-for sigmaInd = 1:length(sigmas)
-    tic;
-    sigma = sigmas(sigmaInd);
-    TACPath = ['/home/qtupker/Documents/Fields Project 11/workspace4/' ...
-        'Square3EinputFunction/pabloModelTACs_0vb/0noise/fullTAC' ...
-        num2str(sigma) 'sigma.tac'];
-    CpPath = ['/home/qtupker/Documents/Fields Project 11/workspace4/' ...
-        'Square3EinputFunction/Cps/pabloModel_' num2str(sigma) 'sigma.smpl'];
-    Vts(:, 1, sigmaInd, 1) = nihms(TACPath, CpPath, true, false);
-    toc;
+for noiseInd = 1:numNoises
+    for sigmaInd = 1:length(sigmas)
+        tic;
+        for trialInd = 1:numTrials
+            sigma = sigmas(sigmaInd);
+            TACPath = ['/home/qtupker/Documents/Fields Project 11/' ...
+                'workspace4/Square3EinputFunction/' ...
+                'pabloModelTACs_cereb_ref_0vb/' num2str(noises(noiseInd))...
+                'noise/' num2str(sigma) 'sigma/fullTACsf_' ...
+                num2str(noises(noiseInd)) '_sim_' num2str(trialInd) '.tac'];
+            CpPath = ['Data/Cps/pabloModel/pabloModel_' num2str(sigma) 'sigma.smpl'];
+            Vts(:, sigmaInd, noiseInd, trialInd) = nihms(TACPath, CpPath, false, false);
+        end
+        toc;
+    end
 end
 
-Vts = permute(Vts, [1 3 2 4]);
-Vts = Vts(:, :, 1, 1);
-for ii = 1:21
-    disp(Vts(:, ii))
-end
-    
-    
-
-
-
+VtMeans = mean(Vts, 4);
+VtStds = std(Vts, 0, 4);
+VtMaxes = max(Vts, 4);
+VtMins = min(Vts, 4);
 
 uisave;
 
