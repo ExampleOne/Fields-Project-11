@@ -18,7 +18,7 @@ for sigmaInd = 1:length(sigmas)
         num2str(sigma) 'sigma.tac'];
     CpPath = ['/home/qtupker/Documents/Fields Project 11/workspace4/' ...
         'Square3EinputFunction/Cps/pabloModel_' num2str(sigma) 'sigma.smpl'];
-    Vts(:, 1, sigmaInd, 1) = nihms(TACPath, CpPath, false, false);
+    Vts(:, 1, sigmaInd, 1) = nihms(TACPath, CpPath, true, false);
     toc;
 end
 

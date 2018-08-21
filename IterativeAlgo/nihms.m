@@ -9,7 +9,7 @@ fullTAC = dlmread(TACpath, '\t', 1, 0);
 startTimes = fullTAC(:, 1);
 endTimes = fullTAC(:, 2);
 TAC = fullTAC(:, regions); %the 6 brain regions
-TACint = cumsum((endTimes - startTimes) .* TAC);
+TACint = cumsum((endTimes - startTimes) .* TAC); %integrate
 TAC = TAC(startingFrame:end, :);
 TACint = TACint(startingFrame:end, :);
 
@@ -38,11 +38,12 @@ ISAresult = ISAresult + auc - ISAresult(1);
 [iterResult, Vt] = IterativeAlgorithm(TAC, TACint, ISAresult);
 
 if showGraphs
-    %Fit curve with biexponential model
+    %Fit curve with biexponential model'
+    CpTimes = (startTimes(6:end) + endTimes(6:end)) / 2;
     times = (startTimes(startingFrame:end) + endTimes(startingFrame:end)) / 2;
 
-    [results, error] = fit2E(iterResult, times, singleBloodDraw, bloodDrawTime, ...
-        bloodDrawErrFactor);
+%     [results, error] = fit2E(iterResult, times, singleBloodDraw, bloodDrawTime, ...
+%         bloodDrawErrFactor);
 
     
     %%% Display data...
@@ -50,17 +51,17 @@ if showGraphs
     sourceCpInt = cumtrapz(sourceCp(:, 1), sourceCp(:, 2));
     % Where to start intCp calculation?
 
-    CpIntAtTimes = interp1(sourceCp(:, 1), sourceCpInt, times);
+    CpIntAtTimes = interp1(sourceCp(:, 1), sourceCpInt, CpTimes);
     
     figure;
-    plot(times, CpIntAtTimes, ':', times, ISAresult, 'o-', ...
-        times, iterResult, 'o-', times, model2E(results, times), 'o--');
+    plot(CpTimes, CpIntAtTimes, ':', times, ISAresult, 'o-', ...
+        times, iterResult, 'o-')%, times, model2E(results, times), 'o--');
     legend('real Cp result', 'ISA result', 'It Alg result', 'biexponential model');
     
     %combined graph
-    figure;
-    plot(times, CpIntAtTimes, ':',times, iterResult, 'bo', times, model2E(results, times), 'r-');
-    legend('real Cp int', 'generated Cp int', 'biexponential fit');
+%     figure;
+%     plot(times, CpIntAtTimes, ':',times, iterResult, 'bo')%, times, model2E(results, times), 'r-');
+%     legend('real Cp int', 'generated Cp int', 'biexponential fit');
 end
 
 if showText
