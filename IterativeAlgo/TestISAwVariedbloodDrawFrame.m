@@ -1,7 +1,7 @@
 clear variable;
 %Tac simulated from Pablo model
-fulltac = dlmread(['Data/TACs/pabloModel/0noise0vb/fullTAC-2sigma.tac'], '\t', 1, 0);
-sourceCp = dlmread('Data/Cps/pabloModel/pabloModel_0.2sigma.smpl', '\t', 1, 0);
+fulltac = dlmread(['Data/TACs/pabloModel/0noise0vb/fullTAC2sigma.tac'], '\t', 1, 0);
+sourceCp = dlmread('Data/Cps/pabloModel/pabloModel_2sigma.smpl', '\t', 1, 0);
 
 startingFrame = 11;
 lastFrame = 28;

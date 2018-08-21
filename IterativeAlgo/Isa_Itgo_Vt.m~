@@ -1,6 +1,6 @@
 clear variable;
 %Tac simulated from Pablo model
-fulltac = dlmread(['Data/TACs/pabloModel/4noise0vb/0sigma/fullTACno_noise.tac'], '\t', 1, 0);
+fulltac = dlmread(['Data/TACs/pabloModel/0noise0vb/fullTAC0sigma.tac'], '\t', 1, 0);
 startingFrame = 11;
 lastFrame = 28;
 plotpoints = lastFrame - startingFrame + 1;
@@ -10,6 +10,7 @@ trimmedTAC = fulltac(end - plotpoints + 1:end, :);
 % pdata = plasmafile
 datarelev = trimmedTAC(:,[3 4 7 8 9 10]); %the 6 brain regions
 fulldatarelev =fulltac(:,[3 4 7 8 9 10]);
+
 
 n = size(datarelev,2);
 k = 1; %counter
@@ -147,23 +148,23 @@ end
 
 %%use Simulated Annealing to fit the CPint1%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% format short g;
-% times = trimmedTAC(:,1);
-% 
-% fity = @(b,x) b(1)*(1-exp(-b(2)*x)) + b(3)*(1-exp(-b(4)*x))+b(5);
-% 
-% errors = zeros(1,2);
-% results = zeros(5,2); %the 4 can be changed 
-% 
-% phi1 = @(b) trapz((Cpint1 - fity(b,times)).^2);
-% 
-% tic;
-% results(:,1) = simulatedAnnealing(phi1,...
-%     [0.1 0.00001 0.1 0.00001 0], ...
-%     [-1e9 0 -1e9 0 -1e9], ...
-%     [1e9 0.05 1e9 0.05 1e9 ], 1000, 1e-7, 0.85);
-% disp(['Time elapsed in round ' num2str(1) ':']);
-% toc;
+format short g;
+times = trimmedTAC(:,1);
+
+fity = @(b,x) b(1)*(1-exp(-b(2)*x)) + b(3)*(1-exp(-b(4)*x))+b(5);
+
+errors = zeros(1,2);
+results = zeros(5,2); %the 4 can be changed 
+
+phi1 = @(b) trapz((Cpint1 - fity(b,times)).^2);
+
+tic;
+results(:,1) = simulatedAnnealing(phi1,...
+    [0.1 0.00001 0.1 0.00001 0], ...
+    [-1e9 0 -1e9 0 -1e9], ...
+    [1e9 0.05 1e9 0.05 1e9 ], 1000, 1e-7, 0.85);
+disp(['Time elapsed in round ' num2str(1) ':']);
+toc;
 
 datap = dlmread(['Data/Cps/pabloModel/pabloModel_0sigma.smpl'], '\t', 1, 0);
 otp = datap(:,1);
@@ -177,14 +178,14 @@ ypint = cumtrapz(tp, yp);
 CpIntAtTimes = interp1(oypint, times);
 
 %real Cp data
-% %%%%%%%%%%%%%%%%%%%calculate the factor for Cpint%%%%%%%%%%%%%
-% fitCpintAtSample = fity(results(:, 1), endTime)-fity(results(:, 1), startTime);
-% Cpintfactor = trapz(sourceCp(startTime:endTime, 2))/fitCpintAtSample;
-% 
-% %%%%%%%%%%%%%%%%%%%calculate the factor for Cp%%%%%%%%%%%%%%%%
-% fitCpAtSample = results(1,1)*results(2,1)*exp(-results(2,1)*bloodDrawTime)+...
-%                 results(3,1)*results(4,1)*exp(-results(4,1)*bloodDrawTime);
-% Cpfactor = singleBloodDraw/fitCpAtSample;
+%%%%%%%%%%%%%%%%%%%calculate the factor for Cpint%%%%%%%%%%%%%
+fitCpintAtSample = fity(results(:, 1), endTime)-fity(results(:, 1), startTime);
+Cpintfactor = trapz(sourceCp(startTime:endTime, 2))/fitCpintAtSample;
+
+%%%%%%%%%%%%%%%%%%%calculate the factor for Cp%%%%%%%%%%%%%%%%
+fitCpAtSample = results(1,1)*results(2,1)*exp(-results(2,1)*bloodDrawTime)+...
+                results(3,1)*results(4,1)*exp(-results(4,1)*bloodDrawTime);
+Cpfactor = singleBloodDraw/fitCpAtSample;
 
 
 
@@ -214,17 +215,17 @@ CpIntAtTimes = interp1(oypint, times);
 %use model fitting ISA-italgo as fix point
 figure;
 plot(otp, oypint, ':', times, ISAresult, 'o-', ...
-    times, Cpint1, 'o-');
-legend('real Cp result', 'ISA result', 'It Alg result 1');
+    times, Cpint1, 'o-', times, fity(results(:, 1), times), 'o--');
+legend('real Cp result', 'ISA result', 'It Alg result 1', 'biexp model');
 
-%errors (1,1) = phi1(results(:, 1))/trapz(Cpint1.^2) ;
+errors (1,1) = phi1(results(:, 1))/trapz(Cpint1.^2) ;
 
 % Includes integral of Y squared.
-% 
-% disp(['variables in model ' num2str(1) ':']);
-% disp(results(:, 1)');
-% disp(['Error in model' num2str(1) ' = ' num2str(errors(1,1))]);
-%     
+
+disp(['variables in model ' num2str(1) ':']);
+disp(results(:, 1)');
+disp(['Error in model' num2str(1) ' = ' num2str(errors(1,1))]);
+    
 
 
 shift3 = oypint(end)-Cpint1(end);
@@ -246,10 +247,5 @@ for i = 1:n
         coeffest = P(1);
         Vt(i,1) = coeffest;
 end   
-
-disp('Vt:=');
-disp(Vt);
-disp('Vt from ISA = ');
-disp(VtISA);
 
 uisave;

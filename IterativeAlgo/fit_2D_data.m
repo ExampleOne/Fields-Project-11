@@ -57,6 +57,6 @@ switch lower(vizualization)
         plot(XData,Yhat,'black');
         hold off
      case {'no' }
-         disp('No vizualization.')
+        % disp('No vizualization.')
 end         
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
