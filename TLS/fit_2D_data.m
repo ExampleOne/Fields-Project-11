@@ -19,7 +19,7 @@ function [Err, P] = fit_2D_data(XData, YData, vizualization)
 % Date: 24/05/2006, 15/07/2009
 %
 kx=length(XData);
-ky=length(YData);;
+ky=length(YData);
 if kx ~= ky
    disp('Incompatible X and Y data.');
    close all;
@@ -38,7 +38,7 @@ a2=sy-b2.*sx;
 R=corrcoef(XData,YData);
 if R(1,2) > 0 
     P=[b1 a1];
-    Yhat = XData.*b1 + a1;
+    Yhat = XData.*b1 + a1; 
     Xhat = ((YData-a1)./b1);
 end
 if R(1,2) < 0
