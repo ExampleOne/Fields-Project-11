@@ -7,7 +7,7 @@ noises = 0;
 
 numRegions = 7;
 numNoises = length(noises);
-numTrials = 1;
+numTrials = 20;
 
 Vts = zeros(numRegions, length(sigmas), numNoises, numTrials);
 DVR_table = zeros(numRegions - 1, length(sigmas), numNoises, numTrials);
@@ -36,6 +36,8 @@ end
 
 DVR_means = mean(DVR_table, 4);
 DVR_stds = std(DVR_table, 0, 4);
+DVR_maxes = max(DVR_table, [], 4);
+DVR_mins = min(DVR_table, [], 4);
 
 uisave;
 
