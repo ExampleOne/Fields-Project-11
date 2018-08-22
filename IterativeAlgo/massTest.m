@@ -31,8 +31,36 @@ end
 
 VtMeans = mean(Vts, 4);
 VtStds = std(Vts, 0, 4);
-VtMaxes = max(Vts, 4);
-VtMins = min(Vts, 4);
+VtMaxes = max(Vts, [], 4);
+VtMins = min(Vts, [], 4);
+
+for noiseInd = 1:numNoises
+    disp(['noiseInd = ' num2str(noiseInd)]);
+    for sigmaInd = 1:length(sigmas)
+        disp(VtMeans(:, sigmaInd, noiseInd));
+    end
+end
+
+for noiseInd = 1:numNoises
+    disp(['noiseInd = ' num2str(noiseInd)]);
+    for sigmaInd = 1:length(sigmas)
+        disp(VtStds(:, sigmaInd, noiseInd));
+    end
+end
+
+for noiseInd = 1:numNoises
+    disp(['noiseInd = ' num2str(noiseInd)]);
+    for sigmaInd = 1:length(sigmas)
+        disp(VtMins(:, sigmaInd, noiseInd));
+    end
+end
+
+for noiseInd = 1:numNoises
+    disp(['noiseInd = ' num2str(noiseInd)]);
+    for sigmaInd = 1:length(sigmas)
+        disp(VtMaxes(:, sigmaInd, noiseInd));
+    end
+end
 
 uisave;
 

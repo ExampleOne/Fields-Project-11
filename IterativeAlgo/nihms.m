@@ -71,12 +71,5 @@ if showGraphs
 %     legend('real Cp int', 'generated Cp int', 'biexponential fit');
 end
 
-if showText
-    disp(['variables in model ' num2str(1) ':']);
-    disp(results(:, 1)');
-    disp(['Error in model' num2str(1) ' = ' num2str(error)]);
-    disp('Vt = ');
-    disp(Vt);
-end
 
 end
