@@ -29,9 +29,16 @@ auc = trapz(sourceCp(earlyIndices, 1), sourceCp(earlyIndices, 2));
 ISAresult = ISA(TAC, TACint);
 
 %Adjust for single blood draw
-slope = (ISAresult(bloodDrawFrame - startingFrame + 1) - ...
-    ISAresult(bloodDrawFrame - startingFrame)) / (endBlood - startBlood);
-ISAresult = ISAresult * singleBloodDraw / slope;
+shortRegressRadius = 2;
+startIndex = bloodDrawFrame - shortRegressRadius;
+endIndex = bloodDrawFrame + shortRegressRadius + 1; % since we draw blood through a whole frame...
+[~, P] = fit_2D_data(startTimes(startIndex:endIndex), ...
+    ISAresult(startIndex - startingFrame + 1:endIndex - startingFrame + 1), 'no');
+ISAslope = P(1);
+
+ISAresult = ISAresult * singleBloodDraw / ISAslope;
+
+
 ISAresult = ISAresult + auc - ISAresult(1);
 % ie. we *fix* the first point of ISA!!! This is quite important.
 
