@@ -2,7 +2,7 @@ function Vt = nihms(TACpath, CpPath, showGraphs, showText)
 %NIHMS implements the method described in the NIHMS paper
 %
 
-regions = [3 4 7 8 9 10];
+regions = [3 4 7 8 9 10 11];
 
 startingFrame = 11;
 fullTAC = dlmread(TACpath, '\t', 1, 0);
@@ -22,10 +22,6 @@ singleBloodDraw = trapz(sourceCp(startBlood:endBlood, 2)) / ...
     (endBlood - startBlood);
 bloodDrawErrFactor = 1e6;
 
-%CALCULATING AUC!!!
-earlyIndices = sourceCp(:, 1) < startTimes(startingFrame);
-auc = trapz(sourceCp(earlyIndices, 1), sourceCp(earlyIndices, 2));
-
 ISAresult = ISA(TAC, TACint);
 
 %Adjust for single blood draw
@@ -39,7 +35,6 @@ ISAslope = P(1);
 ISAresult = ISAresult * singleBloodDraw / ISAslope;
 
 
-ISAresult = ISAresult + auc - ISAresult(1);
 % ie. we *fix* the first point of ISA!!! This is quite important.
 
 [iterResult, Vt] = IterativeAlgorithm(TAC, TACint, ISAresult);
@@ -71,12 +66,5 @@ if showGraphs
 %     legend('real Cp int', 'generated Cp int', 'biexponential fit');
 end
 
-if showText
-    disp(['variables in model ' num2str(1) ':']);
-    disp(results(:, 1)');
-    disp(['Error in model' num2str(1) ' = ' num2str(error)]);
-    disp('Vt = ');
-    disp(Vt);
-end
 
 end
