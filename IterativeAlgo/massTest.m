@@ -7,7 +7,7 @@ noises = 0:10;
 
 numRegions = 7;
 numNoises = length(noises);
-numTrials = 20;
+numTrials = 200;
 
 Vts = zeros(numRegions, length(sigmas), numNoises, numTrials);
 DVR_table = zeros(numRegions - 1, length(sigmas), numNoises, numTrials);
@@ -17,11 +17,11 @@ for noiseInd = 1:numNoises
         tic;
         for trialInd = 1:numTrials
             sigma = sigmas(sigmaInd);
-            TACPath = ['/Users/shixiaoying/Desktop/MATLAB/DVR/'...
-                'pabloModelTACs_cereb_ref_0vb/' num2str(noises(noiseInd))...
+            TACPath = ['/home/jouyang/Downloads/GIT_code/'...
+                'pabloModelTACs_cereb_ref_0vb_with_negatives/' num2str(noises(noiseInd))...
                 'noise/' num2str(sigma) 'sigma/fullTACsf_' ...
                 num2str(noises(noiseInd)) '_sim_' num2str(trialInd) '.tac'];
-            CpPath = ['/Users/shixiaoying/Desktop/MATLAB/newtacs/Fields-Project-11/'...
+            CpPath = ['/home/jouyang/Downloads/GIT_code/'...
                 'Data/Cps/pabloModel/pabloModel_' num2str(sigma) 'sigma.smpl'];
             Vts(:, sigmaInd, noiseInd, trialInd) = nihms(TACPath, CpPath, false, false);
             
@@ -66,6 +66,8 @@ for noiseInd = 1:numNoises
         disp(DVR_maxes(:, sigmaInd, noiseInd));
     end
 end
+
+
 
 uisave;
 

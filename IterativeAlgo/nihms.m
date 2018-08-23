@@ -14,25 +14,26 @@ TAC = TAC(startingFrame:end, :);
 TACint = TACint(startingFrame:end, :);
 
 sourceCp = dlmread(CpPath, '\t', 1, 0);
-bloodDrawFrame = 20; % 20th frame
-startBlood = startTimes(bloodDrawFrame);
-endBlood = endTimes(bloodDrawFrame);
-bloodDrawTime = (startBlood  + endBlood) / 2;
-singleBloodDraw = trapz(sourceCp(startBlood:endBlood, 2)) / ...
-    (endBlood - startBlood);
-bloodDrawErrFactor = 1e6;
+
+% bloodDrawFrame = 20; % 20th frame
+% startBlood = startTimes(bloodDrawFrame);
+% endBlood = endTimes(bloodDrawFrame);
+% bloodDrawTime = (startBlood  + endBlood) / 2;
+% singleBloodDraw = trapz(sourceCp(startBlood:endBlood, 2)) / ...
+%     (endBlood - startBlood);
+% bloodDrawErrFactor = 1e6;
 
 ISAresult = ISA(TAC, TACint);
 
-%Adjust for single blood draw
-shortRegressRadius = 2;
-startIndex = bloodDrawFrame - shortRegressRadius;
-endIndex = bloodDrawFrame + shortRegressRadius + 1; % since we draw blood through a whole frame...
-[~, P] = fit_2D_data(startTimes(startIndex:endIndex), ...
-    ISAresult(startIndex - startingFrame + 1:endIndex - startingFrame + 1), 'no');
-ISAslope = P(1);
-
-ISAresult = ISAresult * singleBloodDraw / ISAslope;
+% %Adjust for single blood draw
+% shortRegressRadius = 2;
+% startIndex = bloodDrawFrame - shortRegressRadius;
+% endIndex = bloodDrawFrame + shortRegressRadius + 1; % since we draw blood through a whole frame...
+% [~, P] = fit_2D_data(startTimes(startIndex:endIndex), ...
+%     ISAresult(startIndex - startingFrame + 1:endIndex - startingFrame + 1), 'no');
+% ISAslope = P(1);
+% 
+% ISAresult = ISAresult * singleBloodDraw / ISAslope;
 
 
 % ie. we *fix* the first point of ISA!!! This is quite important.
