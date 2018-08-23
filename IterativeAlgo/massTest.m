@@ -5,15 +5,19 @@ format compact;
 sigmas = -2:0.2:2;
 noises = 0:10;
 
+googleSpreadSheetID = '1mBe8fQp-5RCBkfMJ35gHHYcZTxHu5e9TeM7xo15F85o';
+googleSheetID = '719663763';
+
 numRegions = 6;
 numNoises = length(noises);
 numTrials = 200;
+numSigmas = length(sigmas);
 
 Vts = zeros(numRegions, length(sigmas), numNoises, numTrials);
 DVRs = zeros(numRegions - 1, length(sigmas), numNoises, numTrials);
 
 for noiseInd = 1:numNoises
-    for sigmaInd = 1:length(sigmas)
+    for sigmaInd = 1:numSigmas
         tic;
         for trialInd = 1:numTrials
             sigma = sigmas(sigmaInd);
@@ -34,33 +38,15 @@ VtStds = std(Vts, 0, 4);
 VtMaxes = max(Vts, [], 4);
 VtMins = min(Vts, [], 4);
 
-for noiseInd = 1:numNoises
-    disp(['noiseInd = ' num2str(noiseInd)]);
-    for sigmaInd = 1:length(sigmas)
-        disp(VtMeans(:, sigmaInd, noiseInd));
-    end
-end
+meansOut = reshape(VtMeans(:, :, :), [numRegions * numSigmas numNoises]);
+stdsOut = reshape(VtStds(:, :, :), [numRegions * numSigmas numNoises]);
+maxesOut = reshape(VtMaxes(:, :, :), [numRegions * numSigmas numNoises]);
+minsOut = reshape(VtMins(:, :, :), [numRegions * numSigmas numNoises]);
 
-for noiseInd = 1:numNoises
-    disp(['noiseInd = ' num2str(noiseInd)]);
-    for sigmaInd = 1:length(sigmas)
-        disp(VtStds(:, sigmaInd, noiseInd));
-    end
-end
-
-for noiseInd = 1:numNoises
-    disp(['noiseInd = ' num2str(noiseInd)]);
-    for sigmaInd = 1:length(sigmas)
-        disp(VtMins(:, sigmaInd, noiseInd));
-    end
-end
-
-for noiseInd = 1:numNoises
-    disp(['noiseInd = ' num2str(noiseInd)]);
-    for sigmaInd = 1:length(sigmas)
-        disp(VtMaxes(:, sigmaInd, noiseInd));
-    end
-end
+mat2sheets(googleSpreadSheetID, googleSheetID, [13 4], meansOut);
+mat2sheets(googleSpreadSheetID, googleSheetID, [13 18], stdsOut);
+mat2sheets(googleSpreadSheetID, googleSheetID, [13 32], maxesOut);
+mat2sheets(googleSpreadSheetID, googleSheetID, [13 46], minsOut);
 
 uisave;
 

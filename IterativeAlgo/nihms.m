@@ -29,8 +29,8 @@ auc = trapz(sourceCp(earlyIndices, 1), sourceCp(earlyIndices, 2));
 ISAresult = ISA(TAC, TACint);
 
 %Adjust for single blood draw
-startIndex = 15;
-endIndex = 25; % since we draw blood through a whole frame...
+startIndex = 12;
+endIndex = 28; % since we draw blood through a whole frame...
 [~, P] = fit_2D_data(startTimes(startIndex:endIndex), ...
     ISAresult(startIndex - startingFrame + 1:endIndex - startingFrame + 1), 'no');
 ISAslope = P(1);
