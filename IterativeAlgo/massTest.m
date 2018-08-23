@@ -36,11 +36,12 @@ for noiseInd = 1:numNoises
 end
 
 
-
 DVR_means = mean(DVR_table, 4);
 DVR_stds = std(DVR_table, 0, 4);
 DVR_maxes = max(DVR_table, [], 4);
 DVR_mins = min(DVR_table, [], 4);
+
+
 
 for noiseInd = 1:numNoises
     disp(['noiseInd = ' num2str(noiseInd)]);
@@ -66,9 +67,24 @@ end
 for noiseInd = 1:numNoises
     disp(['noiseInd = ' num2str(noiseInd)]);
     for sigmaInd = 1:length(sigmas)
-        disp(DVR_maxes(:, sigmaInd, noiseInd));
+        disp(DVR_maxes(:, sigmaInd, noiseInd));        
     end
 end
+
+googleSpreadSheetID = '147SxPtM9_ycQNbDtGV7IZ7BykBzEYpm3G8kPx2KdtUI';
+googleSheetID = '1071545489';
+
+meansOut = reshape(DVR_means(:, :, :), [(numRegions-1) * length(sigmas) numNoises]);
+stdsOut = reshape(DVR_stds(:, :, :), [(numRegions-1) * length(sigmas) numNoises]);
+minsOut = reshape(DVR_mins(:, :, :), [(numRegions-1) * length(sigmas) numNoises]);
+maxesOut = reshape(DVR_maxes(:, :, :), [(numRegions-1) * length(sigmas) numNoises]);
+
+mat2sheets(googleSpreadSheetID, googleSheetID, [13 4], meansOut);
+mat2sheets(googleSpreadSheetID, googleSheetID, [13 18], stdsOut);
+mat2sheets(googleSpreadSheetID, googleSheetID, [13 32], minsOut);
+mat2sheets(googleSpreadSheetID, googleSheetID, [13 46], maxesOut);
+
+
 
 Totaltime = sum(sum(time));
 disp(['Total time = ' num2str(Totaltime)]);
