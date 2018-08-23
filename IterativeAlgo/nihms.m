@@ -25,7 +25,7 @@ sourceCp = dlmread(CpPath, '\t', 1, 0);
 
 ISAresult = ISA(TAC, TACint);
 
-% %Adjust for single blood draw
+%Adjust for single blood draw
 % shortRegressRadius = 2;
 % startIndex = bloodDrawFrame - shortRegressRadius;
 % endIndex = bloodDrawFrame + shortRegressRadius + 1; % since we draw blood through a whole frame...

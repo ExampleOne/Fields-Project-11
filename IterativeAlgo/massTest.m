@@ -11,6 +11,7 @@ numTrials = 200;
 
 Vts = zeros(numRegions, length(sigmas), numNoises, numTrials);
 DVR_table = zeros(numRegions - 1, length(sigmas), numNoises, numTrials);
+time = zeros(numNoises, length(sigmas));
 
 for noiseInd = 1:numNoises
     for sigmaInd = 1:length(sigmas)
@@ -18,7 +19,7 @@ for noiseInd = 1:numNoises
         for trialInd = 1:numTrials
             sigma = sigmas(sigmaInd);
             TACPath = ['/home/jouyang/Downloads/GIT_code/'...
-                'pabloModelTACs_cereb_ref_0vb_with_negatives/' num2str(noises(noiseInd))...
+                'pabloModelTACs_cereb_ref_0vb_200_highK1/' num2str(noises(noiseInd))...
                 'noise/' num2str(sigma) 'sigma/fullTACsf_' ...
                 num2str(noises(noiseInd)) '_sim_' num2str(trialInd) '.tac'];
             CpPath = ['/home/jouyang/Downloads/GIT_code/'...
@@ -30,9 +31,11 @@ for noiseInd = 1:numNoises
                 Vts(1:numRegions - 1, sigmaInd, noiseInd, trialInd) ./  ...
                 Vts(end, sigmaInd, noiseInd, trialInd);
         end
-        toc;
+        time(noiseInd,sigmaInd) = toc;
     end
 end
+
+
 
 DVR_means = mean(DVR_table, 4);
 DVR_stds = std(DVR_table, 0, 4);
@@ -67,7 +70,19 @@ for noiseInd = 1:numNoises
     end
 end
 
+Totaltime = sum(sum(time));
+disp(['Total time = ' num2str(Totaltime)]);
 
+for noiseInd = 1:numNoises
+    disp(['noiseInd = ' num2str(noiseInd)]);
+    for sigmaInd = 1:length(sigmas)
+        if time(noiseInd,sigmaInd) > 20
+            disp(['noise index = ' num2str(noiseInd)]);
+            disp(['sigma index = ' num2str(sigmaInd)]);
+            disp(['abnormal time = ' num2str(time(noiseInd,sigmaInd))]);
+        end
+    end
+end
 
 uisave;
 
