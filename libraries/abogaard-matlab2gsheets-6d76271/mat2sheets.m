@@ -352,14 +352,8 @@ while (~success && safeguard<MAXITER)
 end
 
 if success
-    json_return = [];
     isr = java.io.InputStreamReader(con.getInputStream);
     br = java.io.BufferedReader(isr);
-%     l = br.readLine();
-%     while ~isempty(l)
-%         json_return = [json_return, l];
-%         l = br.readLine();
-%     end
     json_return = br.lines().collect(Collectors.toList()).toArray();
     j = char(json_return)';
     j = j(:)';
