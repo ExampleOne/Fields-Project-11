@@ -6,7 +6,7 @@ sigmas = -2:0.2:2;
 noises = 0:10;
 
 googleSpreadSheetID = '1mBe8fQp-5RCBkfMJ35gHHYcZTxHu5e9TeM7xo15F85o';
-googleSheetID = '1032645990';
+googleSheetID = '780402165';
 
 numRegions = 6;
 numNoises = length(noises);
@@ -45,8 +45,9 @@ minsOut = reshape(VtMins(:, :, :), [numRegions * numSigmas numNoises]);
 
 mat2sheets(googleSpreadSheetID, googleSheetID, [13 4], meansOut);
 mat2sheets(googleSpreadSheetID, googleSheetID, [13 18], stdsOut);
-mat2sheets(googleSpreadSheetID, googleSheetID, [13 32], maxesOut);
-mat2sheets(googleSpreadSheetID, googleSheetID, [13 46], minsOut);
+mat2sheets(googleSpreadSheetID, googleSheetID, [13 32], minsOut);
+mat2sheets(googleSpreadSheetID, googleSheetID, [13 46], maxesOut);
+mat2sheets(googleSpreadSheetID, googleSheetID, [1 3], {['Last update: ' datestr(now)]});
 
 uisave;
 

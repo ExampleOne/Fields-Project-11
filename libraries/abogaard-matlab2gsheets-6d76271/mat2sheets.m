@@ -321,6 +321,7 @@ function [nRows, nCols, sheetName] = getSheetMetaData(spreadsheetID, sheetID, aS
 import java.io.*;
 import java.net.*;
 import java.lang.*;
+import java.util.stream.Collectors;
 com.mathworks.mlwidgets.html.HTMLPrefs.setProxySettings
 
 % params
@@ -354,11 +355,12 @@ if success
     json_return = [];
     isr = java.io.InputStreamReader(con.getInputStream);
     br = java.io.BufferedReader(isr);
-    l = br.readLine();
-    while ~isempty(l)
-        json_return = [json_return, l];
-        l = br.readLine();
-    end
+%     l = br.readLine();
+%     while ~isempty(l)
+%         json_return = [json_return, l];
+%         l = br.readLine();
+%     end
+    json_return = br.lines().collect(Collectors.toList()).toArray();
     j = char(json_return)';
     j = j(:)';
 
