@@ -45,8 +45,9 @@ minsOut = reshape(VtMins(:, :, :), [numRegions * numSigmas numNoises]);
 
 mat2sheets(googleSpreadSheetID, googleSheetID, [13 4], meansOut);
 mat2sheets(googleSpreadSheetID, googleSheetID, [13 18], stdsOut);
-mat2sheets(googleSpreadSheetID, googleSheetID, [13 32], maxesOut);
-mat2sheets(googleSpreadSheetID, googleSheetID, [13 46], minsOut);
+mat2sheets(googleSpreadSheetID, googleSheetID, [13 32], minsOut);
+mat2sheets(googleSpreadSheetID, googleSheetID, [13 46], maxesOut);
+mat2sheets(googleSpreadSheetID, googleSheetID, [1 3], {['Last update: ' datestr(now)]});
 
 uisave;
 
